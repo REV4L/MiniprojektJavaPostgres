@@ -13,11 +13,20 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        try {
+            Database.connect();
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
         // Set up the main container with BorderPane layout
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #2E2E2E;"); // Dark background color for the main area
