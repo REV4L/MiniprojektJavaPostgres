@@ -3,6 +3,7 @@ module com.example {
     requires javafx.fxml;
     requires javafx.media;
     requires javafx.graphics;
+    requires java.sql;
 
     opens com.example to javafx.fxml;
 
