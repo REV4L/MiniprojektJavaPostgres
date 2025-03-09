@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import io.github.cdimascio.dotenv.Dotenv;
+
 public class MainApp extends Application {
 
     @Override

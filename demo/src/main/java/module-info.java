@@ -7,5 +7,7 @@ module com.example {
 
     opens com.example to javafx.fxml;
 
+    requires static java.dotenv;
+
     exports com.example;
 }
