@@ -101,9 +101,11 @@ public class MainApp extends Application {
         p.setAlignment(Pos.CENTER);
         p.getChildren().add(userLabel);
 
-        Button btn1 = newStdButton("Home");
-        Button btn2 = newStdButton("Settings");
-        Button btn3 = newStdButton("Profile");
+        Button b1 = newStdButton("Profil");
+        Button b2 = newStdButton("Nastavitve");
+        Button b3 = newStdButton("Dogodki");
+        Button b4 = newStdButton("Prostori");
+        Button b5 = newStdButton("Izvajalci");
         Button logOut = newStdButton("LOG OUT");
         logOut.setStyle("-fx-background-color: rgb(218, 70, 70)");
 
@@ -111,11 +113,11 @@ public class MainApp extends Application {
         VBox.setVgrow(s, Priority.ALWAYS);
 
         // Add buttons to the sidebar
-        sidebar.getChildren().addAll(p, btn1, btn2, btn3, s, logOut);
+        sidebar.getChildren().addAll(p, b1, b2, b3, b4, b5, s, logOut);
 
-        btn1.setOnAction(event -> changeContent(root, "Home Content"));
-        btn2.setOnAction(event -> changeContent(root, "Settings Content"));
-        btn3.setOnAction(event -> changeContent(root, "Profile Content"));
+        b1.setOnAction(event -> changeContent(root, "Home Content"));
+        b2.setOnAction(event -> changeContent(root, "Settings Content"));
+        b3.setOnAction(event -> changeContent(root, "Profile Content"));
         logOut.setOnAction(event -> {
             Database.logOut();
             rebuild();
