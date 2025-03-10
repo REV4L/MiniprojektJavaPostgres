@@ -115,9 +115,9 @@ public class MainApp extends Application {
         // Add buttons to the sidebar
         sidebar.getChildren().addAll(p, b1, b2, b3, b4, b5, s, logOut);
 
-        b1.setOnAction(event -> changeContent(root, "Home Content"));
-        b2.setOnAction(event -> changeContent(root, "Settings Content"));
-        b3.setOnAction(event -> changeContent(root, "Profile Content"));
+        b1.setOnAction(event -> changeContent(root, pageOrganizator()));
+        // b2.setOnAction(event -> changeContent(root, "Settings Content"));
+        // b3.setOnAction(event -> changeContent(root, "Profile Content"));
         logOut.setOnAction(event -> {
             Database.logOut();
             rebuild();
@@ -149,7 +149,9 @@ public class MainApp extends Application {
     private VBox pageLogin() {
         VBox page = new VBox(10); // Adds spacing between elements
         page.setAlignment(Pos.CENTER);
-        page.setStyle("-fx-background-color:rgb(66, 66, 66); -fx-padding: 20px;"); // Dark background with padding
+        page.getStyleClass().add("page");
+        // page.setStyle("-fx-background-color:rgb(66, 66, 66); -fx-padding: 20px;"); //
+        // Dark background with padding
 
         Label emailLabel = new Label("Email:");
         // emailLabel.setTextFill(Color.WHITE);
@@ -200,15 +202,159 @@ public class MainApp extends Application {
         return page;
     }
 
+    private VBox pageOrganizator() {
+        VBox page = new VBox(10); // Adds spacing between elements
+        page.setAlignment(Pos.CENTER_LEFT);
+        page.getStyleClass().add("page");
+
+        // ----
+        HBox hIme = new HBox(10);
+        Label imeLabel = new Label("Ime:");
+        imeLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px;");
+
+        TextField imeField = new TextField();
+        imeField.setPromptText("Ime...");
+        imeField.setMaxWidth(300);
+        imeField.setText(Database.organizator.ime);
+
+        Region regionIme = new Region(); // Used for even spacing
+        HBox.setHgrow(regionIme, Priority.ALWAYS);
+
+        hIme.getChildren().addAll(imeLabel, regionIme, imeField);
+        // ----
+
+        // ----
+        HBox hEmail = new HBox(10);
+        Label emailLabel = new Label("Email:");
+        emailLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px;");
+
+        TextField emailField = new TextField();
+        emailField.setPromptText("Email...");
+        emailField.setMaxWidth(300);
+        emailField.setText(Database.organizator.email);
+
+        Region regionEmail = new Region();
+        HBox.setHgrow(regionEmail, Priority.ALWAYS);
+
+        hEmail.getChildren().addAll(emailLabel, regionEmail, emailField);
+        // ----
+
+        // ----
+        HBox hTelefon = new HBox(10);
+        Label telefonLabel = new Label("Telefon:");
+        telefonLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px;");
+
+        TextField telefonField = new TextField();
+        telefonField.setPromptText("Telefon...");
+        telefonField.setMaxWidth(300);
+        telefonField.setText(Database.organizator.telefon);
+
+        Region regionTelefon = new Region();
+        HBox.setHgrow(regionTelefon, Priority.ALWAYS);
+
+        hTelefon.getChildren().addAll(telefonLabel, regionTelefon, telefonField);
+        // ----
+
+        // ----
+        HBox hNaslov = new HBox(10);
+        Label naslovLabel = new Label("Naslov:");
+        naslovLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px;");
+
+        TextField naslovField = new TextField();
+        naslovField.setPromptText("Naslov...");
+        naslovField.setMaxWidth(300);
+        naslovField.setText(Database.organizator.naslov);
+
+        Region regionNaslov = new Region();
+        HBox.setHgrow(regionNaslov, Priority.ALWAYS);
+
+        hNaslov.getChildren().addAll(naslovLabel, regionNaslov, naslovField);
+        // ----
+
+        // ----
+        HBox hKrajId = new HBox(10);
+        Label krajIdLabel = new Label("Kraj ID:");
+        krajIdLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px;");
+
+        TextField krajIdField = new TextField();
+        krajIdField.setPromptText("Kraj ID...");
+        krajIdField.setMaxWidth(300);
+        krajIdField.setText(String.valueOf(Database.organizator.krajId));
+
+        Region regionKrajId = new Region();
+        HBox.setHgrow(regionKrajId, Priority.ALWAYS);
+
+        hKrajId.getChildren().addAll(krajIdLabel, regionKrajId, krajIdField);
+        // ----
+
+        // ----
+        HBox hSettingsId = new HBox(10);
+        Label settingsIdLabel = new Label("Settings ID:");
+        settingsIdLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px;");
+
+        TextField settingsIdField = new TextField();
+        settingsIdField.setPromptText("Settings ID...");
+        settingsIdField.setMaxWidth(300);
+        settingsIdField.setText(String.valueOf(Database.organizator.settingsId));
+
+        Region regionSettingsId = new Region();
+        HBox.setHgrow(regionSettingsId, Priority.ALWAYS);
+
+        hSettingsId.getChildren().addAll(settingsIdLabel, regionSettingsId, settingsIdField);
+        // ----
+
+        // ----
+        HBox hStDogodkov = new HBox(10);
+        Label stDogodkovLabel = new Label("Št. dogodkov:");
+        stDogodkovLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px;");
+
+        TextField stDogodkovField = new TextField();
+        stDogodkovField.setPromptText("Št. dogodkov...");
+        stDogodkovField.setMaxWidth(300);
+        stDogodkovField.setText(String.valueOf(Database.organizator.stDogodkov));
+
+        Region regionStDogodkov = new Region();
+        HBox.setHgrow(regionStDogodkov, Priority.ALWAYS);
+
+        hStDogodkov.getChildren().addAll(stDogodkovLabel, regionStDogodkov, stDogodkovField);
+        // ----
+
+        // Save Button
+        Button saveButton = new Button("Save");
+        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 16px;");
+        saveButton.setOnAction(e -> {
+            // Here you will update the Organizator object with new values
+            Database.organizator.ime = imeField.getText();
+            Database.organizator.email = emailField.getText();
+            Database.organizator.telefon = telefonField.getText();
+            Database.organizator.naslov = naslovField.getText();
+            Database.organizator.krajId = Integer.parseInt(krajIdField.getText());
+            Database.organizator.settingsId = Integer.parseInt(settingsIdField.getText());
+            Database.organizator.stDogodkov = Integer.parseInt(stDogodkovField.getText());
+
+            // Update the database with the new values (you need to create an update method
+            // in Database)
+            // Database.updateOrganizator(Database.organizator);
+
+            // Feedback to the user (optional)
+            System.out.println("Profile updated successfully!");
+        });
+
+        // Add all fields and button to the page
+        page.getChildren().addAll(hIme, hEmail, hTelefon, hNaslov, hKrajId, hSettingsId, hStDogodkov, saveButton);
+
+        return page;
+    }
+
     // boolean tryLogin(String email, String pasw) {
     // return false;
     // }
 
     // Function to update the main content based on the button clicked
-    private void changeContent(BorderPane root, String content) {
+    private void changeContent(BorderPane root, VBox page) {
         StackPane contentArea = (StackPane) root.getCenter(); // Access the content area from the root pane
         contentArea.getChildren().clear(); // Clear the existing content
-        contentArea.getChildren().add(new Button(content)); // Add new content
+        contentArea.getChildren().add(page); // Add new content
     }
 
     public static void main(String[] args) {

@@ -38,8 +38,13 @@
     -fx-background-radius: 5px;
 }
 
+.page {
+    -fx-background-color: rgb(43, 43, 43);
+    -fx-padding: 20px;
+}
+
 .text-field {
-    -fx-background-color: rgb(54, 54, 54);
+    -fx-background-color: rgb(29, 29, 29);
     -fx-text-fill: rgb(255, 255, 255);
 }
 
