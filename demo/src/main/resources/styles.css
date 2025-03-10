@@ -1,0 +1,51 @@
+.root {
+    -fx-background-color: #3f3f3f;
+    -fx-font-family: "Trebuchet MS";
+    -fx-font-size: 17;
+
+}
+
+.label {
+    -fx-text-fill: white;
+}
+
+.button {
+    -fx-background-color: #3f3f3f;
+    -fx-text-fill: white;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 16px;
+    -fx-background-radius: 5px;
+    /* -fx-cursor: crosshair; */
+    /* -fx-border-radius: 5;
+    -fx-border-color: #00000000; */
+    /* -fx-effect: brightness(2); */
+}
+
+.button:hover {
+    /* -fx-background-color: #666666; */
+    /* -fx-border-color: #ffffff; */
+    /* -fx-effect: brightness(1.2); */
+    -fx-effect: innershadow(gaussian, #ffffff34, 300, 0.5, 0, 0);
+}
+
+/* Style for a VBox container */
+.container {
+    -fx-padding: 20px;
+    -fx-spacing: 10px;
+    -fx-alignment: center;
+    -fx-background-color: #303030;
+    -fx-background-radius: 5px;
+}
+
+.text-field {
+    -fx-background-color: rgb(54, 54, 54);
+    -fx-text-fill: rgb(255, 255, 255);
+}
+
+.text-field:hover {
+    /* -fx-background-color: #666666; */
+    /* -fx-border-color: #ffffff; */
+    /* -fx-effect: brightness(1.2); */
+    -fx-effect: innershadow(gaussian, #ffffff34, 300, 0.5, 0, 0);
+}
