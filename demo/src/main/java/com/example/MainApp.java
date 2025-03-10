@@ -1,5 +1,6 @@
 package com.example;
 
+import javafx.scene.*;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -12,7 +13,10 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -88,9 +92,13 @@ public class MainApp extends Application {
 
         // Create buttons for the sidebar
 
-        Label userLabel = new Label("Log In");
+        Label userLabel = new Label(
+                Database.organizator != null ? "Logged in as " + Database.organizator.ime : "Log In");
 
-        Pane p = new Pane();
+        HBox p = new HBox();
+        p.minHeight(200);
+        p.getStyleClass().add("container");
+        p.setAlignment(Pos.CENTER);
         p.getChildren().add(userLabel);
 
         Button btn1 = newStdButton("Home");
@@ -99,8 +107,11 @@ public class MainApp extends Application {
         Button logOut = newStdButton("LOG OUT");
         logOut.setStyle("-fx-background-color: rgb(218, 70, 70)");
 
+        Region s = new Region();
+        VBox.setVgrow(s, Priority.ALWAYS);
+
         // Add buttons to the sidebar
-        sidebar.getChildren().addAll(userLabel, btn1, btn2, btn3, logOut);
+        sidebar.getChildren().addAll(p, btn1, btn2, btn3, s, logOut);
 
         btn1.setOnAction(event -> changeContent(root, "Home Content"));
         btn2.setOnAction(event -> changeContent(root, "Settings Content"));
