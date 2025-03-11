@@ -57,6 +57,18 @@
     -fx-background-radius: 5px;
 }
 
+.date-picker .text-field {
+    -fx-background-color: #333;
+    -fx-text-fill: white;
+}
+
+.date-picker .arrow {
+    -fx-background-color: #666;
+}
+
+.date-picker .calendar {
+    -fx-background-color: #444;
+}
 
 
 

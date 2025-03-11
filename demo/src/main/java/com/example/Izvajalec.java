@@ -14,4 +14,9 @@ public class Izvajalec {
         this.telefon = telefon;
         this.stDogodkov = stDogodkov;
     }
+
+    @Override
+    public String toString() {
+        return ime + " [" + stDogodkov + "]"; // Vrne samo ime prostora
+    }
 }

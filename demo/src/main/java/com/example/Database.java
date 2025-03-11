@@ -356,6 +356,125 @@ public class Database {
         }
     }
 
+    public static int insertDogodek(int organizatorId, int prostorId, int izvajalecId, float cenaVstopnice,
+            Timestamp cas, String ime, String opis) {
+        String query = "SELECT insert_dogodek(?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, organizatorId);
+            ps.setInt(2, prostorId);
+            ps.setInt(3, izvajalecId);
+            ps.setFloat(4, cenaVstopnice);
+            ps.setTimestamp(5, cas);
+            ps.setString(6, ime);
+            ps.setString(7, opis);
+
+            // Execute the query and get the result set
+            ResultSet rs = ps.executeQuery();
+
+            // Check if the query returned a result and get the new_id
+            if (rs.next()) {
+                return rs.getInt(1); // The first column is the returned new_id
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // Return -1 or some error value if the insert was unsuccessful
+        return -1;
+    }
+
+    public static void updateDogodek(int id, int organizatorId, int prostorId, int izvajalecId, float cenaVstopnice,
+            Timestamp cas, String ime, String opis) {
+        String query = "SELECT update_dogodek(?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, id);
+            ps.setInt(2, organizatorId);
+            ps.setInt(3, prostorId);
+            ps.setInt(4, izvajalecId);
+            ps.setFloat(5, cenaVstopnice);
+            ps.setTimestamp(6, cas);
+            ps.setString(7, ime);
+            ps.setString(8, opis);
+
+            ps.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void deleteDogodek(int id) {
+        String query = "SELECT delete_dogodek(?)";
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, id);
+            ps.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static Dogodek getDogodek(int id) {
+        String query = "SELECT * FROM get_dogodek(?)";
+        Dogodek dogodek = null;
+
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    dogodek = new Dogodek(
+                            rs.getInt("id"),
+                            rs.getString("ime"),
+                            rs.getString("opis"),
+                            rs.getInt("organizator_id"), // Changed to fetch organizator_id
+                            rs.getInt("prostor_id"), // Changed to fetch prostor_id
+                            rs.getInt("izvajalec_id"), // Changed to fetch izvajalec_id
+                            rs.getFloat("cena_vstopnice"),
+                            rs.getTimestamp("cas"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return dogodek;
+    }
+
+    public static List<Dogodek> getAllDogodki(int organizatorId) {
+        // Adjusted query to use organizator_id parameter in the function call
+        String query = "SELECT * FROM get_all_dogodki(?)";
+        List<Dogodek> dogodki = new ArrayList<>();
+
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+
+            // Set the organizatorId parameter in the query
+            ps.setInt(1, organizatorId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Dogodek dogodek = new Dogodek(
+                            rs.getInt("id"),
+                            rs.getString("ime"),
+                            rs.getString("opis"),
+                            rs.getInt("organizator_id"),
+                            rs.getInt("prostor_id"),
+                            rs.getInt("izvajalec_id"),
+                            rs.getFloat("cena_vstopnice"),
+                            rs.getTimestamp("cas"));
+                    dogodki.add(dogodek);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return dogodki;
+    }
+
     public static ObservableList<Kraj> getKraji() {
         ObservableList<Kraj> krajiList = FXCollections.observableArrayList();
         String query = "SELECT * FROM getKraji()";

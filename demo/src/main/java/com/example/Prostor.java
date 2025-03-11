@@ -18,4 +18,9 @@ public class Prostor {
         this.krajId = krajId;
         this.stDogodkov = stDogodkov;
     }
+
+    @Override
+    public String toString() {
+        return ime + " [" + stDogodkov + "]" + " [max:" + kapaciteta + "]";
+    }
 }

@@ -10,6 +10,7 @@ import javafx.geometry.Pos;
 import javafx.scene.chart.PieChart.Data;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ScrollPane;
@@ -29,6 +30,10 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import io.github.cdimascio.dotenv.Dotenv;
@@ -135,6 +140,7 @@ public class MainApp extends Application {
         sidebar.getChildren().addAll(p, b1, b2, b3, b4, b5, s, logOut);
 
         b1.setOnAction(event -> changeContent(pageOrganizator()));
+        b3.setOnAction(event -> changeContent(pageDogodki(Database.organizatorId)));
         b4.setOnAction(event -> changeContent(pageProstori()));
         b5.setOnAction(event -> changeContent(pageIzvajalci()));
         // b2.setOnAction(event -> changeContent(root, "Settings Content"));
@@ -244,15 +250,69 @@ public class MainApp extends Application {
                 .ifPresent(krajDropdown::setValue);
 
         // Handle selection change
-        krajDropdown.setOnAction(e -> {
-            Kraj selectedKraj = krajDropdown.getValue();
-            if (selectedKraj != null) {
-                Database.organizator.krajId = selectedKraj.id;
-            }
-        });
+        // krajDropdown.setOnAction(e -> {
+        // Kraj selectedKraj = krajDropdown.getValue();
+        // if (selectedKraj != null) {
+        // Database.organizator.krajId = selectedKraj.id;
+        // }
+        // });
 
         return krajDropdown;
 
+    }
+
+    private ComboBox<Prostor> prostorComboBox(int preselectedId) {
+        ComboBox<Prostor> prostorDropdown = new ComboBox<>();
+        prostorDropdown.setPromptText("Izberi prostor...");
+        prostorDropdown.setMaxWidth(300);
+
+        // Fetch Prostori using the appropriate method (e.g., Database.getProstori())
+        ObservableList<Prostor> prostoriList = FXCollections.observableArrayList(Database.getProstori());
+
+        prostorDropdown.setItems(prostoriList);
+
+        // Set the currently selected Prostor (if available)
+        prostoriList.stream()
+                .filter(p -> p.id == preselectedId)
+                .findFirst()
+                .ifPresent(prostorDropdown::setValue);
+
+        // Handle selection change
+        // prostorDropdown.setOnAction(e -> {
+        // Prostor selectedProstor = prostorDropdown.getValue();
+        // if (selectedProstor != null) {
+        // Database.organizator.prostorId = selectedProstor.id;
+        // }
+        // });
+
+        return prostorDropdown;
+    }
+
+    private ComboBox<Izvajalec> izvajalecComboBox(int preselectedId) {
+        ComboBox<Izvajalec> izvajalecDropdown = new ComboBox<>();
+        izvajalecDropdown.setPromptText("Izberi izvajalca...");
+        izvajalecDropdown.setMaxWidth(300);
+
+        // Fetch Izvajalci using the appropriate method (e.g., Database.getIzvajalci())
+        ObservableList<Izvajalec> izvajalciList = FXCollections.observableArrayList(Database.getIzvajalci());
+
+        izvajalecDropdown.setItems(izvajalciList);
+
+        // Set the currently selected Izvajalec (if available)
+        izvajalciList.stream()
+                .filter(i -> i.id == preselectedId)
+                .findFirst()
+                .ifPresent(izvajalecDropdown::setValue);
+
+        // Handle selection change
+        // izvajalecDropdown.setOnAction(e -> {
+        // Izvajalec selectedIzvajalec = izvajalecDropdown.getValue();
+        // if (selectedIzvajalec != null) {
+        // Database.organizator.izvajalecId = selectedIzvajalec.id;
+        // }
+        // });
+
+        return izvajalecDropdown;
     }
 
     private Node pageOrganizator() {
@@ -734,6 +794,159 @@ public class MainApp extends Application {
         page.getChildren().addAll(imeBox, opisBox, kapacitetaBox, naslovBox, krajBox, saveButton, backButton);
 
         return page;
+    }
+
+    public Node pageDogodki(int organizatorId) {
+        // Fetch the list of events using the `getAllDogodki` function from the database
+        // ObservableList<Dogodek> dogodkiList = Database.getAllDogodki(organizatorId);
+        ObservableList<Dogodek> dogodkiList = FXCollections.observableArrayList(Database.getAllDogodki(organizatorId));
+
+        ScrollPane scrollPane = new ScrollPane();
+
+        // VBox to hold the content
+        VBox page = new VBox(10);
+        page.setPadding(new Insets(10));
+        page.getStyleClass().add("page");
+
+        // Create "Add New" button
+        Button addNewButton = new Button("Add New Event");
+        addNewButton.setOnAction(event -> {
+            // Insert a blank event and get the ID
+            int newId = Database.insertDogodek(organizatorId, 1, 1, 0.0f, new Timestamp(System.currentTimeMillis()),
+                    "New Event", ""); // Dummy values for now
+            System.out.println(newId);
+            // After inserting, go to the edit page for this new ID
+            changeContent(pageEditDogodek(newId)); // Call the pageEditDogodek method to navigate
+        });
+
+        // Add the button at the top of the page
+        page.getChildren().add(addNewButton);
+
+        // Display all events with their edit and delete buttons
+        for (Dogodek dogodek : dogodkiList) {
+            HBox hbox = new HBox(10);
+            hbox.setAlignment(Pos.CENTER);
+            hbox.getStyleClass().add("group"); // Add "group" style class to each HBox
+
+            // Create label for the event name
+            Label imeLabel = new Label(dogodek.ime);
+
+            // Create edit button
+            Button editButton = new Button("Edit");
+            editButton.setOnAction(e -> changeContent(pageEditDogodek(dogodek.id)));
+            editButton.setStyle("-fx-background-color: rgb(78, 112, 175)");
+
+            // Create delete button
+            Button deleteButton = new Button("Delete");
+            deleteButton.setOnAction(e -> {
+                Database.deleteDogodek(dogodek.id);
+                page.getChildren().remove(hbox); // Remove the deleted item from the UI
+            });
+            deleteButton.setStyle("-fx-background-color: rgb(206, 78, 78)");
+
+            // Create Region for spacing between imeLabel and editButton
+            Region region = new Region();
+            HBox.setHgrow(region, Priority.ALWAYS); // Allow the Region to grow and push items apart
+
+            // Add imeLabel, region, and editButton to HBox
+            Region r2 = new Region();
+            r2.setMinWidth(10);
+
+            hbox.getChildren().addAll(imeLabel, region, editButton, r2, deleteButton);
+
+            // Add HBox to VBox
+            page.getChildren().add(hbox);
+        }
+
+        scrollPane.setContent(page);
+        scrollPane.setFitToWidth(true); // Ensures it resizes properly
+        scrollPane.setFitToHeight(true); // Ensures it resizes properly
+        scrollPane.setPannable(true); // Allows mouse scrolling
+
+        return scrollPane;
+    }
+
+    public Node pageEditDogodek(int id) {
+        // Fetch the event data from the database
+        Dogodek dogodek = Database.getDogodek(id);
+
+        // VBox container
+        VBox page = new VBox(10);
+        page.setPadding(new Insets(10));
+        page.setAlignment(Pos.CENTER);
+
+        // Fields and Labels
+        TextField imeField = new TextField(dogodek.ime);
+        TextField opisField = new TextField(dogodek.opis);
+        TextField cenaField = new TextField(String.valueOf(dogodek.cena_vstopnice));
+        DatePicker casField = new DatePicker(dogodek.cas.toLocalDateTime().toLocalDate());
+
+        TextField hourField = new TextField(String.valueOf(dogodek.cas.toLocalDateTime().getHour()));
+        hourField.setPromptText("Hour");
+        hourField.setMaxWidth(50);
+
+        TextField minuteField = new TextField(String.valueOf(dogodek.cas.toLocalDateTime().getMinute()));
+        minuteField.setPromptText("Minute");
+        minuteField.setMaxWidth(50);
+
+        ComboBox<Prostor> prostorComboBox = prostorComboBox(dogodek.prostor_id);
+        ComboBox<Izvajalec> izvajalecComboBox = izvajalecComboBox(dogodek.izvajalec_id);
+
+        // Save and Back buttons
+        Button backButton = new Button("Back");
+        backButton.setMinWidth(300);
+        backButton.setStyle("-fx-background-color:rgb(83, 83, 83); -fx-text-fill: white;");
+
+        Button saveButton = new Button("Save Changes");
+        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
+        saveButton.setMinWidth(300);
+
+        // Back button action
+        backButton.setOnAction(event -> {
+            changeContent(pageDogodki(Database.organizatorId)); // Navigate back
+        });
+
+        // Save button action
+        saveButton.setOnAction(event -> {
+            String ime = imeField.getText();
+            String opis = opisField.getText();
+            float cena = Float.parseFloat(cenaField.getText());
+            LocalDateTime dateTime = casField.getValue().atTime(
+                    Integer.parseInt(hourField.getText()),
+                    Integer.parseInt(minuteField.getText()));
+            Timestamp cas = Timestamp.valueOf(dateTime);
+            int prostorId = prostorComboBox.getSelectionModel().getSelectedItem().id;
+            int izvajalecId = izvajalecComboBox.getSelectionModel().getSelectedItem().id;
+
+            Database.updateDogodek(id, dogodek.organizator_id, prostorId, izvajalecId, cena, cas, ime, opis);
+        });
+
+        // Layout for each field
+        HBox imeBox = createHBox("Ime: ", imeField);
+        HBox opisBox = createHBox("Opis: ", opisField);
+        HBox cenaBox = createHBox("Cena: ", cenaField);
+        HBox casBox = createHBox("Datum: ", casField);
+        HBox timeBox = createHBox("Izberi uro: ", hourField, minuteField);
+        HBox prostorBox = createHBox("Izberi prostor: ", prostorComboBox);
+        HBox izvajalecBox = createHBox("Izberi izvajalca: ", izvajalecComboBox);
+
+        // Add elements to the page
+        page.getChildren().addAll(imeBox, opisBox, cenaBox, casBox, timeBox, prostorBox, izvajalecBox, saveButton,
+                backButton);
+
+        return page;
+    }
+
+    private HBox createHBox(String labelText, Node... elements) {
+        HBox hbox = new HBox(10);
+        hbox.setAlignment(Pos.TOP_LEFT);
+        Label label = new Label(labelText);
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        hbox.getChildren().add(label);
+        hbox.getChildren().add(spacer);
+        hbox.getChildren().addAll(elements);
+        return hbox;
     }
 
     private void changeContent(Node page) {
