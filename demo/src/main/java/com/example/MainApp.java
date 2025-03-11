@@ -8,7 +8,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.chart.PieChart.Data;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -28,6 +31,11 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -72,32 +80,75 @@ public class MainApp extends Application {
         // Create the sidebar
 
         // Create the main content area (initial content message)
-        Database.login("val", "val");
+        // Database.login("val", "val");
 
         StackPane stack = new StackPane();
         stack.setStyle("-fx-background-color: #3A3A3A;");
         root.setCenter(stack);
+        Scene scene = new Scene(root, 1400, 800);
 
         if (Database.loggedIn()) {
             Database.getOrganizator();
             VBox sidebar = leftSidebar(root); // Pass root to sidebar creation
             root.setLeft(sidebar);
+
+            try {
+                stack.getChildren().add(new Label("Select page"));
+                // Access the CSS file from the resources folder
+                URL cssUrl = getClass().getResource("/styles.css"); // Leading '/' is crucial
+
+                if (cssUrl != null) {
+                    // Read the CSS file into a String
+                    String css = new String(Files.readAllBytes(Paths.get(cssUrl.toURI())), StandardCharsets.UTF_8);
+
+                    // Replace the placeholders with actual values from the database
+                    css = css.replace("SYSTEM_FONT", "'" + Database.font + "'"); // Assuming the font is stored in the
+                                                                                 // DB
+                    css = css.replace("SYSTEM_COLOR", Database.color); // Assuming the color is stored in the DB
+
+                    // Clear any previous stylesheets
+                    scene.getStylesheets().clear();
+
+                    // Write the updated CSS into a temporary file
+                    Path tempCssFile = Files.createTempFile("temp", ".css");
+                    Files.write(tempCssFile, css.getBytes(StandardCharsets.UTF_8));
+
+                    // Add the temporary CSS file as a stylesheet
+                    scene.getStylesheets().add(tempCssFile.toUri().toString());
+                } else {
+                    // Handle case when the CSS file is not found
+                    System.out.println("CSS file not found!");
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace(); // Log any exceptions for debugging
+            }
         } else {
             // Initial content (message)
             stack.getChildren().add(pageLogin());
+            scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         }
 
-        // Set up the scene with dark background
-        Scene scene = new Scene(root, 1400, 800);
-        scene.setFill(Color.BLACK);
-        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+        // Set the background color as needed
+        scene.setFill(Color.BLACK); // Or any other color
+
         primaryStage.setTitle(appName);
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();
 
-        changeContent(pageIzvajalci());
+        // changeContent(pageIzvajalci());
         // debug
+    }
+
+    private void mvW(double dx, double dy) {
+        // Get the current position of the window
+        double currentX = primaryStage.getX();
+        double currentY = primaryStage.getY();
+
+        // Move the window relatively by the offsets dx and dy
+        primaryStage.setX(currentX + dx); // Move the window by dx pixels horizontally
+        primaryStage.setY(currentY + dy); // Move the window by dy pixels vertically
     }
 
     // Label userLabel = null;
@@ -140,6 +191,7 @@ public class MainApp extends Application {
         sidebar.getChildren().addAll(p, b1, b2, b3, b4, b5, s, logOut);
 
         b1.setOnAction(event -> changeContent(pageOrganizator()));
+        b2.setOnAction(event -> changeContent(pageSettings()));
         b3.setOnAction(event -> changeContent(pageDogodki(Database.organizatorId)));
         b4.setOnAction(event -> changeContent(pageProstori()));
         b5.setOnAction(event -> changeContent(pageIzvajalci()));
@@ -313,6 +365,231 @@ public class MainApp extends Application {
         // });
 
         return izvajalecDropdown;
+    }
+
+    private Node pageSettings() {
+        ScrollPane scrollPane = new ScrollPane();
+
+        VBox page = new VBox(10); // Adds spacing between elements
+        page.setAlignment(Pos.CENTER);
+        page.getStyleClass().add("page");
+
+        // ---- Font Selection ----
+        HBox hFont = new HBox(10);
+        Label fontLabel = new Label("Font:");
+
+        ComboBox<String> fontComboBox = new ComboBox<>();
+        fontComboBox.getItems().addAll("Trebuchet MS", "Comic Sans MS", "Arial", "Courier New", "Verdana");
+
+        // Load saved font from the database
+        String savedFont = Database.font; // Fetch saved font from DB
+        fontComboBox.setValue(savedFont != null ? savedFont : "Trebuchet MS"); // Default font if none is saved
+
+        Region regionFont = new Region(); // Used for even spacing
+        HBox.setHgrow(regionFont, Priority.ALWAYS);
+
+        hFont.getChildren().addAll(fontLabel, regionFont, fontComboBox);
+        // ----
+
+        // ---- Color Picker using ComboBox ----
+        HBox hColor = new HBox(10);
+        Label colorLabel = new Label("Color:");
+
+        // Create a ComboBox with predefined colors (name and hex value)
+        ComboBox<String> colorComboBox = new ComboBox<>();
+
+        // Expanded predefined colors (name and hex value)
+        colorComboBox.getItems().addAll(
+                "Red (#FF0000)", "Green (#00FF00)", "Blue (#0000FF)",
+                "Black (#000000)", "White (#FFFFFF)", "Yellow (#FFFF00)",
+                "Orange (#FFA500)", "Purple (#800080)",
+                // Desaturated colors
+                "Beige (#F5F5DC)", "Light Brown (#A52A2A)", "Pastel Blue (#AEC6CF)",
+                "Pastel Green (#77DD77)", "Pastel Pink (#FFD1DC)", "Muted Lavender (#E6E6FA)",
+                "Muted Coral (#F88379)", "Dusty Rose (#D1A7A1)", "Soft Yellow (#F9E79F)",
+                // Darker tones
+                "Charcoal (#36454F)", "Dark Slate Gray (#2F4F4F)", "Dark Olive Green (#556B2F)",
+                "Dark Brown (#3E2723)", "Deep Navy (#003366)", "Dark Slate Blue (#483D8B)",
+                // Dark grays
+                "Gunmetal Gray (#2A3439)", "Ash Gray (#B2BEB5)", "Charcoal Gray (#36454F)");
+
+        // Set the default value for the ComboBox (this could come from the database)
+        String savedColor = Database.color; // Fetch saved color from DB
+        if (savedColor != null) {
+            // Find the color name that matches the saved color
+            colorComboBox.setValue(getColorNameByHex(savedColor));
+        } else {
+            // Default to black if no color is saved
+            colorComboBox.setValue("Black (#000000)");
+        }
+
+        Region regionColor = new Region(); // Used for even spacing
+        HBox.setHgrow(regionColor, Priority.ALWAYS);
+
+        hColor.getChildren().addAll(colorLabel, regionColor, colorComboBox);
+        // ----
+
+        // ---- Save Button ----
+        Button saveButton = new Button("Save");
+        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
+        saveButton.setOnAction(e -> {
+            String selectedFont = fontComboBox.getValue();
+            String selectedColor = getColorHexByName(colorComboBox.getValue());
+
+            // Update the settings in the database
+            Database.updateSettings(Database.organizatorId, selectedFont, selectedColor);
+            System.out.println("Selected Font: " + selectedFont);
+            System.out.println("Selected Color: " + selectedColor);
+
+            rebuild();
+            changeContent(pageSettings()); // Refresh page after saving
+        });
+
+        // Add all fields and button to the page
+        hFont.getStyleClass().add("group");
+        hColor.getStyleClass().add("group");
+
+        page.getChildren().addAll(hFont, hColor, saveButton);
+
+        scrollPane.setContent(page);
+        scrollPane.setFitToWidth(true); // Ensures it resizes properly
+        scrollPane.setFitToHeight(true); // Ensures it resizes properly
+        scrollPane.setPannable(true); // Allows mouse scrolling
+
+        return scrollPane;
+    }
+
+    // Helper method to get color name by hex code
+    private String getColorNameByHex(String hex) {
+        switch (hex) {
+            case "#FF0000":
+                return "Red (#FF0000)";
+            case "#00FF00":
+                return "Green (#00FF00)";
+            case "#0000FF":
+                return "Blue (#0000FF)";
+            case "#000000":
+                return "Black (#000000)";
+            case "#FFFFFF":
+                return "White (#FFFFFF)";
+            case "#FFFF00":
+                return "Yellow (#FFFF00)";
+            case "#FFA500":
+                return "Orange (#FFA500)";
+            case "#800080":
+                return "Purple (#800080)";
+            // Desaturated colors
+            case "#F5F5DC":
+                return "Beige (#F5F5DC)";
+            case "#A52A2A":
+                return "Light Brown (#A52A2A)";
+            case "#AEC6CF":
+                return "Pastel Blue (#AEC6CF)";
+            case "#77DD77":
+                return "Pastel Green (#77DD77)";
+            case "#FFD1DC":
+                return "Pastel Pink (#FFD1DC)";
+            case "#E6E6FA":
+                return "Muted Lavender (#E6E6FA)";
+            case "#F88379":
+                return "Muted Coral (#F88379)";
+            case "#D1A7A1":
+                return "Dusty Rose (#D1A7A1)";
+            case "#F9E79F":
+                return "Soft Yellow (#F9E79F)";
+            // Darker tones
+            case "#36454F":
+                return "Charcoal (#36454F)";
+            case "#2F4F4F":
+                return "Dark Slate Gray (#2F4F4F)";
+            case "#556B2F":
+                return "Dark Olive Green (#556B2F)";
+            case "#3E2723":
+                return "Dark Brown (#3E2723)";
+            case "#003366":
+                return "Deep Navy (#003366)";
+            case "#483D8B":
+                return "Dark Slate Blue (#483D8B)";
+            // Dark grays
+            case "#2A3439":
+                return "Gunmetal Gray (#2A3439)";
+            case "#B2BEB5":
+                return "Ash Gray (#B2BEB5)";
+            default:
+                return "Black (#000000)"; // Default value if no match
+        }
+    }
+
+    // Helper method to get color hex value by name
+    private String getColorHexByName(String colorName) {
+        switch (colorName) {
+            case "Red (#FF0000)":
+                return "#FF0000";
+            case "Green (#00FF00)":
+                return "#00FF00";
+            case "Blue (#0000FF)":
+                return "#0000FF";
+            case "Black (#000000)":
+                return "#000000";
+            case "White (#FFFFFF)":
+                return "#FFFFFF";
+            case "Yellow (#FFFF00)":
+                return "#FFFF00";
+            case "Orange (#FFA500)":
+                return "#FFA500";
+            case "Purple (#800080)":
+                return "#800080";
+            // Desaturated colors
+            case "Beige (#F5F5DC)":
+                return "#F5F5DC";
+            case "Light Brown (#A52A2A)":
+                return "#A52A2A";
+            case "Pastel Blue (#AEC6CF)":
+                return "#AEC6CF";
+            case "Pastel Green (#77DD77)":
+                return "#77DD77";
+            case "Pastel Pink (#FFD1DC)":
+                return "#FFD1DC";
+            case "Muted Lavender (#E6E6FA)":
+                return "#E6E6FA";
+            case "Muted Coral (#F88379)":
+                return "#F88379";
+            case "Dusty Rose (#D1A7A1)":
+                return "#D1A7A1";
+            case "Soft Yellow (#F9E79F)":
+                return "#F9E79F";
+            // Darker tones
+            case "Charcoal (#36454F)":
+                return "#36454F";
+            case "Dark Slate Gray (#2F4F4F)":
+                return "#2F4F4F";
+            case "Dark Olive Green (#556B2F)":
+                return "#556B2F";
+            case "Dark Brown (#3E2723)":
+                return "#3E2723";
+            case "Deep Navy (#003366)":
+                return "#003366";
+            case "Dark Slate Blue (#483D8B)":
+                return "#483D8B";
+            // Dark grays
+            case "Gunmetal Gray (#2A3439)":
+                return "#2A3439";
+            case "Ash Gray (#B2BEB5)":
+                return "#B2BEB5";
+            case "Charcoal Gray (#36454F)":
+                return "#36454F";
+            default:
+                return "#000000"; // Default hex value
+        }
+    }
+
+    private void showMessageBox(AlertType type, String title, String message) {
+        Alert alert = new Alert(type); // Create the alert with the specified type
+        alert.setTitle(title); // Set the title of the message box
+        alert.setHeaderText(null); // Optional: Set the header text (null means no header)
+        alert.setContentText(message); // Set the content (message) text
+
+        alert.showAndWait(); // Show the alert and wait for the user to close it
     }
 
     private Node pageOrganizator() {
@@ -518,8 +795,12 @@ public class MainApp extends Application {
             editButton.setStyle("-fx-background-color: rgb(78, 112, 175)");
             Button deleteButton = new Button("Delete");
             deleteButton.setOnAction(e -> {
-                Database.deleteIzvajalec(izvajalec.id);
-                page.getChildren().remove(hbox);
+                try {
+                    Database.deleteIzvajalec(izvajalec.id);
+                    page.getChildren().remove(hbox);
+                } catch (Exception ex) {
+                    showMessageBox(AlertType.ERROR, "Error", "Ta band je povezan z dogodki");
+                }
             });
             deleteButton.setStyle("-fx-background-color: rgb(206, 78, 78)");
 
@@ -668,8 +949,13 @@ public class MainApp extends Application {
             // Create delete button
             Button deleteButton = new Button("Delete");
             deleteButton.setOnAction(e -> {
-                Database.deleteProstor(prostor.id);
-                page.getChildren().remove(hbox); // Remove the deleted item from the UI
+                // page.getChildren().remove(hbox); // Remove the deleted item from the UI
+                try {
+                    Database.deleteProstor(prostor.id);
+                    page.getChildren().remove(hbox);
+                } catch (Exception ex) {
+                    showMessageBox(AlertType.ERROR, "Error", "Ta prostor je povezan z dogodki");
+                }
             });
             deleteButton.setStyle("-fx-background-color: rgb(206, 78, 78)");
 
@@ -839,8 +1125,15 @@ public class MainApp extends Application {
             // Create delete button
             Button deleteButton = new Button("Delete");
             deleteButton.setOnAction(e -> {
-                Database.deleteDogodek(dogodek.id);
-                page.getChildren().remove(hbox); // Remove the deleted item from the UI
+                // Database.deleteDogodek(dogodek.id);
+                // page.getChildren().remove(hbox); // Remove the deleted item from the UI
+
+                try {
+                    Database.deleteDogodek(dogodek.id);
+                    page.getChildren().remove(hbox);
+                } catch (Exception ex) {
+                    showMessageBox(AlertType.ERROR, "Error", "Napaka");
+                }
             });
             deleteButton.setStyle("-fx-background-color: rgb(206, 78, 78)");
 
@@ -952,8 +1245,13 @@ public class MainApp extends Application {
     private void changeContent(Node page) {
         Database.getOrganizator(Database.organizatorId);
 
+        root.setStyle("-fx-font-family: '" + Database.font + "'" +
+                "-fx-background-color: " + Database.color + ";");
+
         StackPane contentArea = (StackPane) root.getCenter(); // Access the content area from the root pane
         contentArea.getChildren().clear(); // Clear the existing content
+        // page.setStyle("-fx-font-family: '" + Database.font + "'"
+        // -fx-background-color: " + Database.color + ";");
         contentArea.getChildren().add(page); // Add new content
     }
 

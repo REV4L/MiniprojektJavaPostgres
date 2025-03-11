@@ -16,6 +16,9 @@ public class Database {
     public static String user = "neondb_owner";
     public static String password = "npg_D3d4jRMXJbfS"; // pls dont hack me
 
+    public static String font = "TrebuchetMS";
+    public static String color = "#000000";
+
     public static Connection conn = null;
 
     public static int organizatorId = -1;
@@ -95,8 +98,24 @@ public class Database {
     }
 
     public static void getOrganizator() {
-        if (organizatorId >= 0)
+        if (organizatorId >= 0) {
             organizator = getOrganizator(organizatorId);
+
+            String query = "SELECT * FROM get_organizator_settings(?)";
+
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+
+                stmt.setInt(1, organizatorId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        font = rs.getString("font");
+                        color = rs.getString("color");
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public static Organizator getOrganizator(int userId) {
@@ -254,31 +273,63 @@ public class Database {
         }
     }
 
-    public static void deleteIzvajalec(int id) {
+    public static void deleteIzvajalec(int id) throws SQLException {
         String query = "SELECT del_izvajalec(?)";
 
+        // try (
+        PreparedStatement stmt = conn.prepareStatement(query);
+        // ) {
+        stmt.setInt(1, id);
+
+        stmt.executeUpdate();
+        stmt.clearBatch();
+        stmt.close();
+
+        // return true;
+
+        // } catch (SQLException e) {
+        // e.printStackTrace();
+
+        // return false;
+        // }
+
+    }
+
+    // Method to update the settings for an organizator using the SQL function
+    public static void updateSettings(int organizatorId, String font, String color) {
+        String query = "SELECT update_organizator_settings(?, ?, ?)";
+
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, id);
+            // Set the parameters for the query
+            stmt.setInt(1, organizatorId); // Set the organizatorId
+            stmt.setString(2, font); // Set the font
+            stmt.setString(3, color); // Set the color
 
-            stmt.executeUpdate();
-            stmt.clearBatch();
-            stmt.close();
+            // Execute the function call
+            stmt.execute();
 
+            System.out.println("Settings updated successfully for organizator ID: " + organizatorId);
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public static void deleteProstor(int id) {
+    public static void deleteProstor(int id) throws SQLException {
         String query = "SELECT delProstor(?)";
 
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+        // try (
+        PreparedStatement stmt = conn.prepareStatement(query);
+        // ) {
 
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        stmt.setInt(1, id);
+        stmt.executeUpdate();
+
+        // return true;
+        // } catch (SQLException e) {
+        // e.printStackTrace();
+        // return false;
+        // }
+
     }
 
     public static int insertProstor(String ime, String opis, int kapaciteta, String naslov, int kraj_id) {
@@ -405,15 +456,20 @@ public class Database {
         }
     }
 
-    public static void deleteDogodek(int id) {
+    public static void deleteDogodek(int id) throws SQLException {
         String query = "SELECT delete_dogodek(?)";
-        try (PreparedStatement ps = conn.prepareStatement(query)) {
+        // try (
+        PreparedStatement ps = conn.prepareStatement(query);
+        // ) {
 
-            ps.setInt(1, id);
-            ps.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        ps.setInt(1, id);
+        ps.execute();
+        // return true;
+        // } catch (SQLException e) {
+        // e.printStackTrace();
+        // return false;
+        // }
+
     }
 
     public static Dogodek getDogodek(int id) {
