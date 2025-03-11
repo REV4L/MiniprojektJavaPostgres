@@ -5,6 +5,12 @@
 
 }
 
+.userlabel {
+    -fx-font-size: 24;
+    /* -fx-font-style: bold; */
+    -fx-font-weight: 200;
+}
+
 .group {
     -fx-padding: 10px;
     -fx-spacing: 1px;
@@ -62,18 +68,38 @@
 
 
 
-.text-field {
+.text-field,
+.text-area {
     -fx-background-color: rgb(29, 29, 29);
+    -fx-control-inner-background: rgb(29, 29, 29);
+    -fx-background-radius: 10;
     -fx-text-fill: rgb(255, 255, 255);
     -fx-prompt-text-fill: #474747;
     -fx-text-alignment: right;
+
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
 }
 
-.text-field:hover {
+.text-field:hover,
+.text-area:hover {
     /* -fx-background-color: #666666; */
     /* -fx-border-color: #ffffff; */
     /* -fx-effect: brightness(1.2); */
-    -fx-effect: innershadow(gaussian, #ffffff34, 300, 0.5, 0, 0);
+    -fx-border-radius: 0;
+    -fx-effect: innershadow(gaussian, #ffffff1c, 3000, 1, 0, 0);
+}
+
+.text-area .scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.text-area .scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.text-area .scroll-pane .content {
+    -fx-background-color: transparent;
 }
 
 

@@ -69,6 +69,11 @@ public class Database {
         organizator = null;
     }
 
+    public static void getOrganizator() {
+        if (organizatorId >= 0)
+            organizator = getOrganizator(organizatorId);
+    }
+
     public static Organizator getOrganizator(int userId) {
         Organizator organizator = null;
         String query = "SELECT * FROM getOrganizers(?)";
@@ -81,6 +86,7 @@ public class Database {
                     organizator = new Organizator(
                             rs.getInt("id"),
                             rs.getString("ime"),
+                            rs.getString("opis"),
                             rs.getString("email"),
                             rs.getString("pasw"),
                             rs.getString("telefon"),
@@ -97,19 +103,22 @@ public class Database {
         return organizator;
     }
 
-    public static void updateOrganizator(int id, String ime, String email, String telefon,
+    public static void updateOrganizator(int id, String ime, String opis, String email, String telefon,
             String naslov, int krajId) {
-        String query = "update_organizator(?, ?, ?, ?, ?)";
+        String query = "SELECT update_organizator(?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, id); // p_id
             stmt.setString(2, ime); // p_ime
-            stmt.setString(3, email); // p_email
-            stmt.setString(4, telefon); // p_telefon
-            stmt.setString(5, naslov); // p_naslov
+            stmt.setString(3, opis); // p_ime
+            stmt.setString(4, email); // p_email
+            stmt.setString(5, telefon); // p_telefon
+            stmt.setString(6, naslov); // p_naslov
+            stmt.setInt(7, krajId); // p_naslov
 
             // Execute the update
             stmt.executeUpdate();
+            // conn.commit();
             System.out.println("Organizator updated");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -122,12 +131,6 @@ public class Database {
 
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
             ResultSet rs = stmt.executeQuery();
-
-            ResultSetMetaData metaData = rs.getMetaData();
-            int columnCount = metaData.getColumnCount();
-            for (int i = 1; i <= columnCount; i++) {
-                System.out.println(metaData.getColumnName(i));
-            }
 
             while (rs.next()) {
                 krajiList.add(new Kraj(

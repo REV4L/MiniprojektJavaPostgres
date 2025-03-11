@@ -3,6 +3,7 @@ package com.example;
 public class Organizator {
     public int id;
     public String ime;
+    public String opis;
     public String email;
     public String pasw;
     public String telefon;
@@ -11,10 +12,12 @@ public class Organizator {
     public int settingsId;
     public int stDogodkov;
 
-    public Organizator(int id, String ime, String email, String pasw, String telefon, String naslov, int krajId,
+    public Organizator(int id, String ime, String opis, String email, String pasw, String telefon, String naslov,
+            int krajId,
             int settingsId, int stDogodkov) {
         this.id = id;
         this.ime = ime;
+        this.opis = opis;
         this.email = email;
         this.pasw = pasw;
         this.telefon = telefon;
@@ -29,6 +32,7 @@ public class Organizator {
         return "Organizator{" +
                 "id=" + id +
                 ", ime='" + ime + '\'' +
+                ", opis='" + opis + '\'' +
                 ", email='" + email + '\'' +
                 ", pasw='" + pasw + '\'' +
                 ", telefon='" + telefon + '\'' +

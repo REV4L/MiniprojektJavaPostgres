@@ -63,11 +63,14 @@ public class MainApp extends Application {
         // Create the sidebar
 
         // Create the main content area (initial content message)
+        Database.login("val", "val");
+
         StackPane stack = new StackPane();
         stack.setStyle("-fx-background-color: #3A3A3A;");
         root.setCenter(stack);
 
         if (Database.loggedIn()) {
+            Database.getOrganizator();
             VBox sidebar = leftSidebar(root); // Pass root to sidebar creation
             root.setLeft(sidebar);
         } else {
@@ -84,9 +87,8 @@ public class MainApp extends Application {
         primaryStage.setResizable(false);
         primaryStage.show();
 
-        // debug
-        Database.login("val", "val");
         changeContent(root, pageOrganizator());
+        // debug
     }
 
     // Label userLabel = null;
@@ -100,7 +102,11 @@ public class MainApp extends Application {
         // Create buttons for the sidebar
 
         Label userLabel = new Label(
-                Database.organizator != null ? "Logged in as " + Database.organizator.ime : "Log In");
+                Database.organizator != null ? Database.organizator.ime : "Log In");
+        userLabel.getStyleClass().add("userlabel");
+        // Label userLabel = new Label(
+        // Database.organizator != null ? "Logged in as \n " + Database.organizator.ime
+        // : "Log In");
 
         HBox p = new HBox();
         p.minHeight(200);
@@ -118,6 +124,8 @@ public class MainApp extends Application {
 
         Region s = new Region();
         VBox.setVgrow(s, Priority.ALWAYS);
+
+        sidebar.setMaxWidth(300);
 
         // Add buttons to the sidebar
         sidebar.getChildren().addAll(p, b1, b2, b3, b4, b5, s, logOut);
@@ -218,9 +226,9 @@ public class MainApp extends Application {
         ObservableList<Kraj> krajiList = FXCollections
                 .observableArrayList(Database.getKraji());
 
-        for (Kraj k : krajiList) {
-            System.out.println("Loaded: " + k);
-        }
+        // for (Kraj k : krajiList) {
+        // System.out.println("Loaded: " + k);
+        // }
         krajDropdown.setItems(krajiList);
 
         // Set the currently selected Kraj (if available)
@@ -244,8 +252,8 @@ public class MainApp extends Application {
     private Node pageOrganizator() {
         ScrollPane scrollPane = new ScrollPane();
 
-        VBox page = new VBox(50); // Adds spacing between elements
-        page.setAlignment(Pos.CENTER_LEFT);
+        VBox page = new VBox(10); // Adds spacing between elements
+        page.setAlignment(Pos.CENTER_RIGHT);
         page.getStyleClass().add("page");
 
         // ----
@@ -261,6 +269,25 @@ public class MainApp extends Application {
         HBox.setHgrow(regionIme, Priority.ALWAYS);
 
         hIme.getChildren().addAll(imeLabel, regionIme, imeField);
+        // ----
+
+        // ----
+        HBox hOpis = new HBox(10);
+        Label opisLabel = new Label("Opis:");
+
+        TextArea opisField = new TextArea();
+        opisField.setPromptText("Opis...");
+        opisField.setMaxWidth(3000);
+        opisField.setPrefRowCount(5); // Adjusts height
+        opisField.setWrapText(true); // Enables text wrapping
+        opisField.setText(Database.organizator.opis);
+
+        Region regionOpis = new Region();
+        regionOpis.setMinWidth(100);
+        // HBox.setHgrow(regionOpis, Priority.min(30, 30));
+        HBox.setHgrow(opisField, Priority.ALWAYS);
+
+        hOpis.getChildren().addAll(opisLabel, regionOpis, opisField);
         // ----
 
         // ----
@@ -340,33 +367,21 @@ public class MainApp extends Application {
         hSettingsId.getChildren().addAll(settingsIdLabel, regionSettingsId, settingsIdField);
         // ----
 
-        // ----
-        HBox hStDogodkov = new HBox(10);
-        Label stDogodkovLabel = new Label("Št. dogodkov:");
-
-        TextField stDogodkovField = new TextField();
-        stDogodkovField.setPromptText("Št. dogodkov...");
-        stDogodkovField.setMaxWidth(300);
-        stDogodkovField.setText(String.valueOf(Database.organizator.stDogodkov));
-
-        Region regionStDogodkov = new Region();
-        HBox.setHgrow(regionStDogodkov, Priority.ALWAYS);
-
-        hStDogodkov.getChildren().addAll(stDogodkovLabel, regionStDogodkov, stDogodkovField);
-        // ----
-
-        // Save Button
         Button saveButton = new Button("Save");
         saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 16px;");
         saveButton.setOnAction(e -> {
 
-            int krajId = krajCB.getSelectionModel().getSelectedItem().getId();
+            int krajId = krajCB.getSelectionModel().getSelectedItem().id;
 
             Database.updateOrganizator(Database.organizatorId,
                     imeField.getText(),
+                    opisField.getText(),
                     emailField.getText(),
                     telefonField.getText(),
-                    naslovField.getText());
+                    naslovField.getText(),
+                    krajId);
+
+            rebuild();
 
             // Update the database with the new values (you need to create an update method
             // in Database)
@@ -379,16 +394,18 @@ public class MainApp extends Application {
         // Add all fields and button to the page
 
         hIme.getStyleClass().add("group");
+        hOpis.getStyleClass().add("group");
         hEmail.getStyleClass().add("group");
         hTelefon.getStyleClass().add("group");
         hNaslov.getStyleClass().add("group");
         hKraj.getStyleClass().add("group");
         // hSettingsId.getStyleClass().add("group");
-        hStDogodkov.getStyleClass().add("group");
-        page.getChildren().addAll(hIme, hEmail, hTelefon, hNaslov, hKraj, hStDogodkov, saveButton);
+        // hStDogodkov.getStyleClass().add("group");
+        page.getChildren().addAll(hIme, hOpis, hEmail, hTelefon, hNaslov, hKraj, saveButton);
 
         scrollPane.setContent(page);
         scrollPane.setFitToWidth(true); // Ensures it resizes properly
+        scrollPane.setFitToHeight(true); // Ensures it resizes properly
         scrollPane.setPannable(true); // Allows mouse scrolling
 
         // return scrollPane;
