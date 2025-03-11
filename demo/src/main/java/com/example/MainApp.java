@@ -135,6 +135,7 @@ public class MainApp extends Application {
         sidebar.getChildren().addAll(p, b1, b2, b3, b4, b5, s, logOut);
 
         b1.setOnAction(event -> changeContent(pageOrganizator()));
+        b4.setOnAction(event -> changeContent(pageProstori()));
         b5.setOnAction(event -> changeContent(pageIzvajalci()));
         // b2.setOnAction(event -> changeContent(root, "Settings Content"));
         // b3.setOnAction(event -> changeContent(root, "Profile Content"));
@@ -456,7 +457,10 @@ public class MainApp extends Application {
             editButton.setOnAction(e -> changeContent(pageEditIzvajalec(izvajalec.id)));
             editButton.setStyle("-fx-background-color: rgb(78, 112, 175)");
             Button deleteButton = new Button("Delete");
-            editButton.setOnAction(e -> changeContent(pageEditIzvajalec(izvajalec.id)));
+            deleteButton.setOnAction(e -> {
+                Database.deleteIzvajalec(izvajalec.id);
+                page.getChildren().remove(hbox);
+            });
             deleteButton.setStyle("-fx-background-color: rgb(206, 78, 78)");
 
             // Create Region for spacing between imeLabel and editButton
@@ -556,6 +560,178 @@ public class MainApp extends Application {
 
         // Add elements to the page
         page.getChildren().addAll(imeBox, opisBox, telefonBox, saveButton, backButton);
+
+        return page;
+    }
+
+    public Node pageProstori() {
+        // List all Prostori from the database
+        ObservableList<Prostor> prostoriList = Database.getProstori();
+
+        ScrollPane scrollPane = new ScrollPane();
+
+        // VBox to hold the content
+        VBox page = new VBox(10);
+        page.setPadding(new Insets(10));
+        page.getStyleClass().add("page");
+
+        // Create "Add New" button
+        Button addNewButton = new Button("Add New");
+        addNewButton.setOnAction(event -> {
+            // Insert blank prostor and get the ID
+            int newId = Database.insertProstor("New Prostor", "", 0, "Nekje", Database.getKraji().get(0).id); // Insert
+                                                                                                              // blank
+                                                                                                              // values
+
+            System.out.println(newId);
+            // After inserting, go to the edit page for this new ID
+            changeContent(pageEditProstor(newId)); // Call the pageEditProstor method to navigate
+        });
+
+        // Add the button at the top of the page
+        page.getChildren().add(addNewButton);
+
+        // Display all prostori with their edit and delete buttons
+        for (Prostor prostor : prostoriList) {
+            HBox hbox = new HBox(10);
+            hbox.setAlignment(Pos.CENTER);
+            hbox.getStyleClass().add("group"); // Add "group" style class to each HBox
+
+            // Create label for the ime
+            Label imeLabel = new Label(prostor.ime); // Directly accessing public field
+
+            // Create edit button
+            Button editButton = new Button("Edit");
+            editButton.setOnAction(e -> changeContent(pageEditProstor(prostor.id)));
+            editButton.setStyle("-fx-background-color: rgb(78, 112, 175)");
+
+            // Create delete button
+            Button deleteButton = new Button("Delete");
+            deleteButton.setOnAction(e -> {
+                Database.deleteProstor(prostor.id);
+                page.getChildren().remove(hbox); // Remove the deleted item from the UI
+            });
+            deleteButton.setStyle("-fx-background-color: rgb(206, 78, 78)");
+
+            // Create Region for spacing between imeLabel and editButton
+            Region region = new Region();
+            HBox.setHgrow(region, Priority.ALWAYS); // Allow the Region to grow and push items apart
+
+            // Add imeLabel, region, and editButton to HBox
+            Region r2 = new Region();
+            r2.setMinWidth(10);
+
+            hbox.getChildren().addAll(imeLabel, region, editButton, r2, deleteButton);
+
+            // Add HBox to VBox
+            page.getChildren().add(hbox);
+        }
+
+        scrollPane.setContent(page);
+        scrollPane.setFitToWidth(true); // Ensures it resizes properly
+        scrollPane.setFitToHeight(true); // Ensures it resizes properly
+        scrollPane.setPannable(true); // Allows mouse scrolling
+
+        return scrollPane;
+    }
+
+    public Node pageEditProstor(int id) {
+        // Get the Prostor data by ID
+        Prostor prostor = Database.getProstor(id);
+
+        // VBox to hold the content
+        VBox page = new VBox(10);
+        page.setPadding(new Insets(10));
+        page.setAlignment(Pos.CENTER);
+
+        // Create fields for editing
+        TextField imeField = new TextField(prostor.ime);
+        imeField.setPromptText("Ime");
+
+        TextArea opisField = new TextArea(prostor.opis);
+        opisField.setPromptText("Opis");
+
+        TextField kapacitetaField = new TextField(String.valueOf(prostor.kapaciteta));
+        kapacitetaField.setPromptText("Kapaciteta");
+
+        TextField naslovField = new TextField(prostor.naslov);
+        naslovField.setPromptText("Naslov");
+
+        // Create ComboBox for Kraj
+        ComboBox<Kraj> krajComboBox = krajCombobox(prostor.krajId); // Pass in the existing krajId for pre-selection
+
+        // Save and Back buttons
+        Button backButton = new Button("Back");
+        backButton.setMinWidth(300);
+        backButton.setStyle("-fx-background-color:rgb(83, 83, 83); -fx-text-fill: white;");
+
+        Button saveButton = new Button("Save Changes");
+        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
+        saveButton.setMinWidth(300);
+
+        // Back button action
+        backButton.setOnAction(event -> {
+            changeContent(pageProstori()); // Navigate back to the list of prostori
+        });
+
+        // Save button action
+        saveButton.setOnAction(event -> {
+            // Get updated data
+            String ime = imeField.getText();
+            String opis = opisField.getText();
+            int kapaciteta = Integer.parseInt(kapacitetaField.getText());
+            String naslov = naslovField.getText();
+            int krajId = krajComboBox.getSelectionModel().getSelectedItem().id; // Get selected Kraj ID
+
+            // Update the prostor in the database
+            Database.updateProstor(id, ime, opis, kapaciteta, naslov, krajId); // Update with the selected Kraj ID
+        });
+
+        // Create HBoxes for each field with labels and fields, adding Regions for
+        // spacing
+        HBox imeBox = new HBox(10);
+        imeBox.setAlignment(Pos.TOP_LEFT);
+        imeBox.getStyleClass().add("group");
+        Label imeLabel = new Label("Ime: ");
+        Region imeRegion = new Region();
+        HBox.setHgrow(imeRegion, Priority.ALWAYS);
+        imeBox.getChildren().addAll(imeLabel, imeRegion, imeField);
+
+        HBox opisBox = new HBox(10);
+        opisBox.setAlignment(Pos.TOP_LEFT);
+        opisBox.getStyleClass().add("group");
+        Label opisLabel = new Label("Opis: ");
+        Region opisRegion = new Region();
+        opisRegion.setMinWidth(100);
+        HBox.setHgrow(opisField, Priority.ALWAYS);
+        opisBox.getChildren().addAll(opisLabel, opisRegion, opisField);
+
+        HBox kapacitetaBox = new HBox(10);
+        kapacitetaBox.setAlignment(Pos.TOP_LEFT);
+        kapacitetaBox.getStyleClass().add("group");
+        Label kapacitetaLabel = new Label("Kapaciteta: ");
+        Region kapacitetaRegion = new Region();
+        HBox.setHgrow(kapacitetaRegion, Priority.ALWAYS);
+        kapacitetaBox.getChildren().addAll(kapacitetaLabel, kapacitetaRegion, kapacitetaField);
+
+        HBox naslovBox = new HBox(10);
+        naslovBox.setAlignment(Pos.TOP_LEFT);
+        naslovBox.getStyleClass().add("group");
+        Label naslovLabel = new Label("Naslov: ");
+        Region naslovRegion = new Region();
+        HBox.setHgrow(naslovRegion, Priority.ALWAYS);
+        naslovBox.getChildren().addAll(naslovLabel, naslovRegion, naslovField);
+
+        HBox krajBox = new HBox(10);
+        krajBox.setAlignment(Pos.TOP_LEFT);
+        krajBox.getStyleClass().add("group");
+        Label krajLabel = new Label("Kraj: ");
+        Region krajRegion = new Region();
+        HBox.setHgrow(krajRegion, Priority.ALWAYS);
+        krajBox.getChildren().addAll(krajLabel, krajRegion, krajComboBox);
+
+        // Add elements to the page
+        page.getChildren().addAll(imeBox, opisBox, kapacitetaBox, naslovBox, krajBox, saveButton, backButton);
 
         return page;
     }

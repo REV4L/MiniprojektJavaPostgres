@@ -269,6 +269,93 @@ public class Database {
         }
     }
 
+    public static void deleteProstor(int id) {
+        String query = "SELECT delProstor(?)";
+
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static int insertProstor(String ime, String opis, int kapaciteta, String naslov, int kraj_id) {
+        String query = "SELECT insertProstor(?, ?, ?, ?, ?)";
+
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, ime);
+            stmt.setString(2, opis);
+            stmt.setInt(3, kapaciteta);
+            stmt.setString(4, naslov);
+            stmt.setInt(5, kraj_id);
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1); // Return the newly inserted id
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return -1; // Return -1 in case of failure
+    }
+
+    // Method to get a single Prostor by ID
+    public static Prostor getProstor(int id) {
+        Prostor prostor = null;
+        String query = "SELECT * FROM getProstor(?)";
+
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, id);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    prostor = new Prostor(
+                            rs.getInt("id"),
+                            rs.getString("ime"),
+                            rs.getString("opis"),
+                            rs.getInt("kapaciteta"),
+                            rs.getString("naslov"),
+                            rs.getInt("kraj_id"),
+                            rs.getInt("st_dogodkov"));
+                }
+            }
+
+            stmt.clearBatch();
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return prostor;
+    }
+
+    // Method to update a Prostor by ID
+    public static void updateProstor(int id, String ime, String opis, int kapaciteta, String naslov, int kraj_id) {
+        String query = "SELECT updateProstor(?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, id); // p_id
+            stmt.setString(2, ime); // p_ime
+            stmt.setString(3, opis); // p_opis
+            stmt.setInt(4, kapaciteta); // p_kapaciteta
+            stmt.setString(5, naslov); // p_naslov
+            stmt.setInt(6, kraj_id); // p_kraj_id
+
+            // Execute the update
+            stmt.executeUpdate();
+
+            stmt.clearBatch();
+            stmt.close();
+            System.out.println("Prostor updated");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static ObservableList<Kraj> getKraji() {
         ObservableList<Kraj> krajiList = FXCollections.observableArrayList();
         String query = "SELECT * FROM getKraji()";
@@ -313,6 +400,31 @@ public class Database {
         }
 
         return izvajalciList;
+    }
+
+    public static ObservableList<Prostor> getProstori() {
+        ObservableList<Prostor> prostoriList = FXCollections.observableArrayList();
+        String query = "SELECT * FROM getProstori()";
+
+        try (Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(query)) {
+
+            while (rs.next()) {
+                Prostor p = new Prostor(
+                        rs.getInt("id"),
+                        rs.getString("ime"),
+                        rs.getString("opis"),
+                        rs.getInt("kapaciteta"),
+                        rs.getString("naslov"),
+                        rs.getInt("kraj_id"),
+                        rs.getInt("st_dogodkov"));
+                prostoriList.add(p);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return prostoriList;
     }
 
 }
