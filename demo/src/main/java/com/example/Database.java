@@ -249,7 +249,21 @@ public class Database {
             stmt.clearBatch();
             stmt.close();
 
-            System.out.println("Izvajalec updated!");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void deleteIzvajalec(int id) {
+        String query = "SELECT del_izvajalec(?)";
+
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, id);
+
+            stmt.executeUpdate();
+            stmt.clearBatch();
+            stmt.close();
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -277,13 +291,12 @@ public class Database {
 
     public static ObservableList<Izvajalec> getIzvajalci() {
         ObservableList<Izvajalec> izvajalciList = FXCollections.observableArrayList();
-        String query = "SELECT * FROM get_all_izvajalci()"; // Using the SQL function for all izvajalci
+        String query = "SELECT * FROM getIzvajalci()"; // Using the SQL function for all izvajalci
 
         try (PreparedStatement stmt = conn.prepareStatement(query);
                 ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                // Add each izvajalec to the list
                 izvajalciList.add(new Izvajalec(
                         rs.getInt("id"),
                         rs.getString("ime"),
@@ -292,8 +305,8 @@ public class Database {
                         rs.getInt("st_dogodkov")));
             }
 
-            stmt.clearBatch();
-            stmt.close();
+            // stmt.clearBatch();
+            // stmt.close();
 
         } catch (SQLException e) {
             e.printStackTrace();

@@ -258,7 +258,7 @@ public class MainApp extends Application {
         ScrollPane scrollPane = new ScrollPane();
 
         VBox page = new VBox(10); // Adds spacing between elements
-        page.setAlignment(Pos.CENTER_RIGHT);
+        page.setAlignment(Pos.CENTER);
         page.getStyleClass().add("page");
 
         // ----
@@ -373,7 +373,7 @@ public class MainApp extends Application {
         // ----
 
         Button saveButton = new Button("Save");
-        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 16px;");
+        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
         saveButton.setOnAction(e -> {
 
             int krajId = krajCB.getSelectionModel().getSelectedItem().id;
@@ -445,14 +445,31 @@ public class MainApp extends Application {
         // Display all izvajalci with their edit buttons
         for (Izvajalec izvajalec : izvajalciList) {
             HBox hbox = new HBox(10);
-            hbox.setAlignment(Pos.CENTER_LEFT);
+            hbox.setAlignment(Pos.CENTER);
+            hbox.getStyleClass().add("group"); // Add "group" style class to each HBox
 
+            // Create label for the ime
             Label imeLabel = new Label(izvajalec.ime); // Directly accessing public field
-            Button editButton = new Button("Edit");
-            editButton.setOnAction(e -> changeContent(pageEditIzvajalec(izvajalec.id))); // Edit button redirects to
-                                                                                         // edit page
 
-            hbox.getChildren().addAll(imeLabel, editButton);
+            // Create edit button
+            Button editButton = new Button("Edit");
+            editButton.setOnAction(e -> changeContent(pageEditIzvajalec(izvajalec.id)));
+            editButton.setStyle("-fx-background-color: rgb(78, 112, 175)");
+            Button deleteButton = new Button("Delete");
+            editButton.setOnAction(e -> changeContent(pageEditIzvajalec(izvajalec.id)));
+            deleteButton.setStyle("-fx-background-color: rgb(206, 78, 78)");
+
+            // Create Region for spacing between imeLabel and editButton
+            Region region = new Region();
+            HBox.setHgrow(region, Priority.ALWAYS); // Allow the Region to grow and push items apart
+
+            // Add imeLabel, region, and editButton to HBox
+            Region r2 = new Region();
+            r2.setMinWidth(10);
+
+            hbox.getChildren().addAll(imeLabel, region, editButton, r2, deleteButton);
+
+            // Add HBox to VBox
             page.getChildren().add(hbox);
         }
 
@@ -468,11 +485,12 @@ public class MainApp extends Application {
         // Get the Izvajalec data by ID
         Izvajalec izvajalec = Database.getIzvajalec(id);
 
-        // System.out.println(izvajalec);
-
         // VBox to hold the content
         VBox page = new VBox(10);
         page.setPadding(new Insets(10));
+        page.setAlignment(Pos.CENTER);
+        // page.getStyleClass().add("page");
+        // page.setStyle("-fx-background-color: rgb(43, 43, 43);");
 
         // Create fields for editing
         TextField imeField = new TextField(izvajalec.ime); // Directly accessing public field
@@ -484,12 +502,21 @@ public class MainApp extends Application {
         TextField telefonField = new TextField(izvajalec.telefon); // Directly accessing public field
         telefonField.setPromptText("Telefon");
 
-        // Save button
+        // Save and Back buttons
         Button backButton = new Button("Back");
+        backButton.setMinWidth(300);
+        backButton.setStyle("-fx-background-color:rgb(83, 83, 83); -fx-text-fill: white;");
+
         Button saveButton = new Button("Save Changes");
+        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
+        saveButton.setMinWidth(300);
+
+        // Back button action
         backButton.setOnAction(event -> {
-            changeContent(pageIzvajalci());
+            changeContent(pageIzvajalci()); // Navigate back to the list of izvajalci
         });
+
+        // Save button action
         saveButton.setOnAction(event -> {
             // Get updated data
             String ime = imeField.getText();
@@ -500,12 +527,35 @@ public class MainApp extends Application {
             Database.updateIzvajalec(id, ime, opis, telefon);
         });
 
+        // Create HBoxes for each field with labels and fields, adding Regions for
+        // spacing
+        HBox imeBox = new HBox(10);
+        imeBox.setAlignment(Pos.TOP_LEFT);
+        imeBox.getStyleClass().add("group");
+        Label imeLabel = new Label("Ime: ");
+        Region imeRegion = new Region();
+        HBox.setHgrow(imeRegion, Priority.ALWAYS);
+        imeBox.getChildren().addAll(imeLabel, imeRegion, imeField);
+
+        HBox opisBox = new HBox(10);
+        opisBox.setAlignment(Pos.TOP_LEFT);
+        opisBox.getStyleClass().add("group");
+        Label opisLabel = new Label("Opis: ");
+        Region opisRegion = new Region();
+        opisRegion.setMinWidth(100);
+        HBox.setHgrow(opisField, Priority.ALWAYS);
+        opisBox.getChildren().addAll(opisLabel, opisRegion, opisField);
+
+        HBox telefonBox = new HBox(10);
+        telefonBox.setAlignment(Pos.TOP_LEFT);
+        telefonBox.getStyleClass().add("group");
+        Label telefonLabel = new Label("Telefon: ");
+        Region telefonRegion = new Region();
+        HBox.setHgrow(telefonRegion, Priority.ALWAYS);
+        telefonBox.getChildren().addAll(telefonLabel, telefonRegion, telefonField);
+
         // Add elements to the page
-        page.getChildren().addAll(
-                new Label("Ime: "), imeField,
-                new Label("Opis: "), opisField,
-                new Label("Telefon: "), telefonField,
-                saveButton);
+        page.getChildren().addAll(imeBox, opisBox, telefonBox, saveButton, backButton);
 
         return page;
     }
