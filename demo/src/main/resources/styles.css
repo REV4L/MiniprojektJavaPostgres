@@ -20,7 +20,7 @@
 
 .scroll-pane {
     -fx-background-color: #3f3f3f;
-    -fx-font-family: "Trebuchet MS";
+    /* -fx-font-family: "Trebuchet MS"; */
     -fx-font-size: 17;
 }
 

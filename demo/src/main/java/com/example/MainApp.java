@@ -5,6 +5,7 @@ import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.chart.PieChart.Data;
 import javafx.scene.control.Button;
@@ -28,6 +29,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
@@ -53,9 +55,11 @@ public class MainApp extends Application {
         rebuild(primaryStage);
     }
 
+    BorderPane root;
+
     void rebuild(Stage primaryStage) {
         // Set up the main container with BorderPane layout
-        BorderPane root = new BorderPane();
+        root = new BorderPane();
         // root.setStyle("-fx-background-color: #2E2E2E;"); // Dark background color for
         // the main area
         // root.setStyle("-fx-font-family: \"Comic Sans MS\";");
@@ -87,7 +91,7 @@ public class MainApp extends Application {
         primaryStage.setResizable(false);
         primaryStage.show();
 
-        changeContent(root, pageOrganizator());
+        changeContent(pageIzvajalci());
         // debug
     }
 
@@ -130,7 +134,8 @@ public class MainApp extends Application {
         // Add buttons to the sidebar
         sidebar.getChildren().addAll(p, b1, b2, b3, b4, b5, s, logOut);
 
-        b1.setOnAction(event -> changeContent(root, pageOrganizator()));
+        b1.setOnAction(event -> changeContent(pageOrganizator()));
+        b5.setOnAction(event -> changeContent(pageIzvajalci()));
         // b2.setOnAction(event -> changeContent(root, "Settings Content"));
         // b3.setOnAction(event -> changeContent(root, "Profile Content"));
         logOut.setOnAction(event -> {
@@ -412,12 +417,100 @@ public class MainApp extends Application {
         return scrollPane;
     }
 
-    // boolean tryLogin(String email, String pasw) {
-    // return false;
-    // }
+    public Node pageIzvajalci() {
+        // List all Izvajalci from the database
+        ObservableList<Izvajalec> izvajalciList = Database.getIzvajalci();
 
-    // Function to update the main content based on the button clicked
-    private void changeContent(BorderPane root, Node page) {
+        ScrollPane scrollPane = new ScrollPane();
+
+        // VBox to hold the content
+        VBox page = new VBox(10);
+        page.setPadding(new Insets(10));
+        page.getStyleClass().add("page");
+
+        // Create "Add New" button
+        Button addNewButton = new Button("Add New");
+        addNewButton.setOnAction(event -> {
+            // Insert blank izvajalec and get the ID
+            int newId = Database.insertIzvajalec("New Izvajalec", "", ""); // Insert blank values
+
+            System.out.println(newId);
+            // After inserting, go to the edit page for this new ID
+            changeContent(pageEditIzvajalec(newId)); // Call the pageEditIzvajalec method to navigate
+        });
+
+        // Add the button at the top of the page
+        page.getChildren().add(addNewButton);
+
+        // Display all izvajalci with their edit buttons
+        for (Izvajalec izvajalec : izvajalciList) {
+            HBox hbox = new HBox(10);
+            hbox.setAlignment(Pos.CENTER_LEFT);
+
+            Label imeLabel = new Label(izvajalec.ime); // Directly accessing public field
+            Button editButton = new Button("Edit");
+            editButton.setOnAction(e -> changeContent(pageEditIzvajalec(izvajalec.id))); // Edit button redirects to
+                                                                                         // edit page
+
+            hbox.getChildren().addAll(imeLabel, editButton);
+            page.getChildren().add(hbox);
+        }
+
+        scrollPane.setContent(page);
+        scrollPane.setFitToWidth(true); // Ensures it resizes properly
+        scrollPane.setFitToHeight(true); // Ensures it resizes properly
+        scrollPane.setPannable(true); // Allows mouse scrolling
+
+        return scrollPane;
+    }
+
+    public Node pageEditIzvajalec(int id) {
+        // Get the Izvajalec data by ID
+        Izvajalec izvajalec = Database.getIzvajalec(id);
+
+        // System.out.println(izvajalec);
+
+        // VBox to hold the content
+        VBox page = new VBox(10);
+        page.setPadding(new Insets(10));
+
+        // Create fields for editing
+        TextField imeField = new TextField(izvajalec.ime); // Directly accessing public field
+        imeField.setPromptText("Ime");
+
+        TextArea opisField = new TextArea(izvajalec.opis); // Directly accessing public field
+        opisField.setPromptText("Opis");
+
+        TextField telefonField = new TextField(izvajalec.telefon); // Directly accessing public field
+        telefonField.setPromptText("Telefon");
+
+        // Save button
+        Button backButton = new Button("Back");
+        Button saveButton = new Button("Save Changes");
+        backButton.setOnAction(event -> {
+            changeContent(pageIzvajalci());
+        });
+        saveButton.setOnAction(event -> {
+            // Get updated data
+            String ime = imeField.getText();
+            String opis = opisField.getText();
+            String telefon = telefonField.getText();
+
+            // Update the izvajalec in the database
+            Database.updateIzvajalec(id, ime, opis, telefon);
+        });
+
+        // Add elements to the page
+        page.getChildren().addAll(
+                new Label("Ime: "), imeField,
+                new Label("Opis: "), opisField,
+                new Label("Telefon: "), telefonField,
+                saveButton);
+
+        return page;
+    }
+
+    private void changeContent(Node page) {
         Database.getOrganizator(Database.organizatorId);
 
         StackPane contentArea = (StackPane) root.getCenter(); // Access the content area from the root pane

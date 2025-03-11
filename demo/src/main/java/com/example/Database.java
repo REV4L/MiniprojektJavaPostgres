@@ -1,12 +1,18 @@
 package com.example;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
 public class Database {
-    public static String url = "jdbc:postgresql://ep-lively-cherry-a26b94ho-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require";
+    public static String url = "jdbc:postgresql://ep-lively-cherry-a26b94ho-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require&autosave=conservative";
     public static String user = "neondb_owner";
     public static String password = "npg_D3d4jRMXJbfS"; // pls dont hack me
 
@@ -23,10 +29,29 @@ public class Database {
         conn = DriverManager.getConnection(url, user, password);
 
         // String sql = "INSERT INTO dogodek_log(cas, data) VALUES(NOW(), ?)";
-        PreparedStatement s = conn.prepareStatement("INSERT INTO dogodek_log(cas, data) VALUES(NOW(), ?)");
-        s.setString(1, "John Doe");
+        // PreparedStatement s = conn.prepareStatement("INSERT INTO dogodek_log(cas,
+        // data) VALUES(NOW(), ?)");
+        // s.setString(1, "John Doe");
 
-        int rowsAffected = s.executeUpdate();
+        // // int rowsAffected = s.executeUpdate();
+        // ScheduledExecutorService executorService =
+        // Executors.newSingleThreadScheduledExecutor();
+        // Runnable discardPlansTask = new Runnable() {
+        // @Override
+        // public void run() {
+        // try (Statement stmt = conn.createStatement()) {
+        // // Execute the DISCARD PLANS command
+        // stmt.execute("DISCARD PLANS");
+        // System.out.println("Plans discarded successfully.");
+        // } catch (Exception e) {
+        // e.printStackTrace();
+        // }
+        // }
+        // };
+
+        // // Schedule the task to run every 100 milliseconds
+        // executorService.scheduleAtFixedRate(discardPlansTask, 0, 100,
+        // TimeUnit.MILLISECONDS);
     }
 
     public static boolean login(String email, String password) {
@@ -96,6 +121,9 @@ public class Database {
                             rs.getInt("st_dogodkov"));
                 }
             }
+
+            stmt.clearBatch();
+            stmt.close();
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
         }
@@ -118,8 +146,110 @@ public class Database {
 
             // Execute the update
             stmt.executeUpdate();
+
+            stmt.clearBatch();
+            stmt.close();
             // conn.commit();
             System.out.println("Organizator updated");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Method to get a single izvajalec by ID
+    public static Izvajalec getIzvajalec(int izvajalecId) {
+        Izvajalec izvajalec = null;
+        String query = "SELECT * FROM get_izvajalec(?)";
+
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, izvajalecId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    izvajalec = new Izvajalec(
+                            rs.getInt("id"),
+                            rs.getString("ime"),
+                            rs.getString("opis"),
+                            rs.getString("telefon"),
+                            rs.getInt("st_dogodkov") // Auto-counted
+                    );
+                }
+            }
+
+            stmt.clearBatch();
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return izvajalec;
+    }
+
+    // Method to get all izvajalci
+    public static List<Izvajalec> getAllIzvajalci() {
+        List<Izvajalec> izvajalciList = new ArrayList<>();
+        String query = "SELECT * FROM get_all_izvajalci()";
+
+        try (PreparedStatement stmt = conn.prepareStatement(query);
+                ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Izvajalec izvajalec = new Izvajalec(
+                        rs.getInt("id"),
+                        rs.getString("ime"),
+                        rs.getString("opis"),
+                        rs.getString("telefon"),
+                        rs.getInt("st_dogodkov"));
+                izvajalciList.add(izvajalec);
+            }
+
+            stmt.clearBatch();
+            stmt.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return izvajalciList;
+    }
+
+    public static int insertIzvajalec(String ime, String opis, String telefon) {
+        int newId = -1; // Default value in case of error
+        String query = "SELECT insert_izvajalec(?, ?, ?)";
+
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, ime);
+            stmt.setString(2, opis);
+            stmt.setString(3, telefon);
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                newId = rs.getInt(1); // Retrieve the inserted ID
+            }
+
+            stmt.clearBatch();
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return newId;
+    }
+
+    public static void updateIzvajalec(int id, String ime, String opis, String telefon) {
+        String query = "SELECT update_izvajalec(?, ?, ?, ?)";
+
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, id);
+            stmt.setString(2, ime);
+            stmt.setString(3, opis);
+            stmt.setString(4, telefon);
+
+            stmt.executeUpdate();
+            stmt.clearBatch();
+            stmt.close();
+
+            System.out.println("Izvajalec updated!");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -144,4 +274,32 @@ public class Database {
         }
         return krajiList;
     }
+
+    public static ObservableList<Izvajalec> getIzvajalci() {
+        ObservableList<Izvajalec> izvajalciList = FXCollections.observableArrayList();
+        String query = "SELECT * FROM get_all_izvajalci()"; // Using the SQL function for all izvajalci
+
+        try (PreparedStatement stmt = conn.prepareStatement(query);
+                ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                // Add each izvajalec to the list
+                izvajalciList.add(new Izvajalec(
+                        rs.getInt("id"),
+                        rs.getString("ime"),
+                        rs.getString("opis"),
+                        rs.getString("telefon"),
+                        rs.getInt("st_dogodkov")));
+            }
+
+            stmt.clearBatch();
+            stmt.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return izvajalciList;
+    }
+
 }
