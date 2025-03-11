@@ -2,6 +2,9 @@ package com.example;
 
 import java.sql.*;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 public class Database {
     public static String url = "jdbc:postgresql://ep-lively-cherry-a26b94ho-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require";
     public static String user = "neondb_owner";
@@ -92,5 +95,50 @@ public class Database {
         }
 
         return organizator;
+    }
+
+    public static void updateOrganizator(int id, String ime, String email, String telefon,
+            String naslov, int krajId) {
+        String query = "update_organizator(?, ?, ?, ?, ?)";
+
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, id); // p_id
+            stmt.setString(2, ime); // p_ime
+            stmt.setString(3, email); // p_email
+            stmt.setString(4, telefon); // p_telefon
+            stmt.setString(5, naslov); // p_naslov
+
+            // Execute the update
+            stmt.executeUpdate();
+            System.out.println("Organizator updated");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static ObservableList<Kraj> getKraji() {
+        ObservableList<Kraj> krajiList = FXCollections.observableArrayList();
+        String query = "SELECT * FROM getKraji()";
+
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            ResultSet rs = stmt.executeQuery();
+
+            ResultSetMetaData metaData = rs.getMetaData();
+            int columnCount = metaData.getColumnCount();
+            for (int i = 1; i <= columnCount; i++) {
+                System.out.println(metaData.getColumnName(i));
+            }
+
+            while (rs.next()) {
+                krajiList.add(new Kraj(
+                        rs.getInt("id"),
+                        rs.getString("ime"),
+                        rs.getString("postna"),
+                        rs.getString("vel_uporabnik")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return krajiList;
     }
 }

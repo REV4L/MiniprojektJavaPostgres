@@ -2,14 +2,16 @@ package com.example;
 
 import javafx.scene.*;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.chart.PieChart.Data;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
@@ -79,7 +81,12 @@ public class MainApp extends Application {
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         primaryStage.setTitle(appName);
         primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
         primaryStage.show();
+
+        // debug
+        Database.login("val", "val");
+        changeContent(root, pageOrganizator());
     }
 
     // Label userLabel = null;
@@ -147,7 +154,7 @@ public class MainApp extends Application {
     }
 
     private VBox pageLogin() {
-        VBox page = new VBox(10); // Adds spacing between elements
+        VBox page = new VBox(1); // Adds spacing between elements
         page.setAlignment(Pos.CENTER);
         page.getStyleClass().add("page");
         // page.setStyle("-fx-background-color:rgb(66, 66, 66); -fx-padding: 20px;"); //
@@ -202,15 +209,48 @@ public class MainApp extends Application {
         return page;
     }
 
-    private VBox pageOrganizator() {
-        VBox page = new VBox(10); // Adds spacing between elements
+    private ComboBox<Kraj> krajCombobox(int preselectedId) {
+        ComboBox<Kraj> krajDropdown = new ComboBox<>();
+        krajDropdown.setPromptText("Izberi kraj...");
+        krajDropdown.setMaxWidth(300);
+
+        // Fetch kraji using getKraji function
+        ObservableList<Kraj> krajiList = FXCollections
+                .observableArrayList(Database.getKraji());
+
+        for (Kraj k : krajiList) {
+            System.out.println("Loaded: " + k);
+        }
+        krajDropdown.setItems(krajiList);
+
+        // Set the currently selected Kraj (if available)
+        krajiList.stream()
+                .filter(k -> k.id == preselectedId)
+                .findFirst()
+                .ifPresent(krajDropdown::setValue);
+
+        // Handle selection change
+        krajDropdown.setOnAction(e -> {
+            Kraj selectedKraj = krajDropdown.getValue();
+            if (selectedKraj != null) {
+                Database.organizator.krajId = selectedKraj.id;
+            }
+        });
+
+        return krajDropdown;
+
+    }
+
+    private Node pageOrganizator() {
+        ScrollPane scrollPane = new ScrollPane();
+
+        VBox page = new VBox(50); // Adds spacing between elements
         page.setAlignment(Pos.CENTER_LEFT);
         page.getStyleClass().add("page");
 
         // ----
         HBox hIme = new HBox(10);
         Label imeLabel = new Label("Ime:");
-        imeLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px;");
 
         TextField imeField = new TextField();
         imeField.setPromptText("Ime...");
@@ -226,7 +266,6 @@ public class MainApp extends Application {
         // ----
         HBox hEmail = new HBox(10);
         Label emailLabel = new Label("Email:");
-        emailLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px;");
 
         TextField emailField = new TextField();
         emailField.setPromptText("Email...");
@@ -242,7 +281,6 @@ public class MainApp extends Application {
         // ----
         HBox hTelefon = new HBox(10);
         Label telefonLabel = new Label("Telefon:");
-        telefonLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px;");
 
         TextField telefonField = new TextField();
         telefonField.setPromptText("Telefon...");
@@ -258,7 +296,6 @@ public class MainApp extends Application {
         // ----
         HBox hNaslov = new HBox(10);
         Label naslovLabel = new Label("Naslov:");
-        naslovLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px;");
 
         TextField naslovField = new TextField();
         naslovField.setPromptText("Naslov...");
@@ -272,25 +309,25 @@ public class MainApp extends Application {
         // ----
 
         // ----
-        HBox hKrajId = new HBox(10);
-        Label krajIdLabel = new Label("Kraj ID:");
-        krajIdLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px;");
+        HBox hKraj = new HBox(10);
+        Label krajIdLabel = new Label("Kraj:");
 
-        TextField krajIdField = new TextField();
-        krajIdField.setPromptText("Kraj ID...");
-        krajIdField.setMaxWidth(300);
-        krajIdField.setText(String.valueOf(Database.organizator.krajId));
+        ComboBox<Kraj> krajCB = krajCombobox(Database.organizator.krajId);
+
+        // TextField krajIdField = new TextField();
+        // krajIdField.setPromptText("Kraj ID...");
+        // krajIdField.setMaxWidth(300);
+        // krajIdField.setText(String.valueOf(Database.organizator.krajId));
 
         Region regionKrajId = new Region();
         HBox.setHgrow(regionKrajId, Priority.ALWAYS);
 
-        hKrajId.getChildren().addAll(krajIdLabel, regionKrajId, krajIdField);
+        hKraj.getChildren().addAll(krajIdLabel, regionKrajId, krajCB);
         // ----
 
         // ----
         HBox hSettingsId = new HBox(10);
         Label settingsIdLabel = new Label("Settings ID:");
-        settingsIdLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px;");
 
         TextField settingsIdField = new TextField();
         settingsIdField.setPromptText("Settings ID...");
@@ -306,7 +343,6 @@ public class MainApp extends Application {
         // ----
         HBox hStDogodkov = new HBox(10);
         Label stDogodkovLabel = new Label("Št. dogodkov:");
-        stDogodkovLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px;");
 
         TextField stDogodkovField = new TextField();
         stDogodkovField.setPromptText("Št. dogodkov...");
@@ -323,14 +359,14 @@ public class MainApp extends Application {
         Button saveButton = new Button("Save");
         saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 16px;");
         saveButton.setOnAction(e -> {
-            // Here you will update the Organizator object with new values
-            Database.organizator.ime = imeField.getText();
-            Database.organizator.email = emailField.getText();
-            Database.organizator.telefon = telefonField.getText();
-            Database.organizator.naslov = naslovField.getText();
-            Database.organizator.krajId = Integer.parseInt(krajIdField.getText());
-            Database.organizator.settingsId = Integer.parseInt(settingsIdField.getText());
-            Database.organizator.stDogodkov = Integer.parseInt(stDogodkovField.getText());
+
+            int krajId = krajCB.getSelectionModel().getSelectedItem().getId();
+
+            Database.updateOrganizator(Database.organizatorId,
+                    imeField.getText(),
+                    emailField.getText(),
+                    telefonField.getText(),
+                    naslovField.getText());
 
             // Update the database with the new values (you need to create an update method
             // in Database)
@@ -341,9 +377,22 @@ public class MainApp extends Application {
         });
 
         // Add all fields and button to the page
-        page.getChildren().addAll(hIme, hEmail, hTelefon, hNaslov, hKrajId, hSettingsId, hStDogodkov, saveButton);
 
-        return page;
+        hIme.getStyleClass().add("group");
+        hEmail.getStyleClass().add("group");
+        hTelefon.getStyleClass().add("group");
+        hNaslov.getStyleClass().add("group");
+        hKraj.getStyleClass().add("group");
+        // hSettingsId.getStyleClass().add("group");
+        hStDogodkov.getStyleClass().add("group");
+        page.getChildren().addAll(hIme, hEmail, hTelefon, hNaslov, hKraj, hStDogodkov, saveButton);
+
+        scrollPane.setContent(page);
+        scrollPane.setFitToWidth(true); // Ensures it resizes properly
+        scrollPane.setPannable(true); // Allows mouse scrolling
+
+        // return scrollPane;
+        return scrollPane;
     }
 
     // boolean tryLogin(String email, String pasw) {
@@ -351,7 +400,9 @@ public class MainApp extends Application {
     // }
 
     // Function to update the main content based on the button clicked
-    private void changeContent(BorderPane root, VBox page) {
+    private void changeContent(BorderPane root, Node page) {
+        Database.getOrganizator(Database.organizatorId);
+
         StackPane contentArea = (StackPane) root.getCenter(); // Access the content area from the root pane
         contentArea.getChildren().clear(); // Clear the existing content
         contentArea.getChildren().add(page); // Add new content

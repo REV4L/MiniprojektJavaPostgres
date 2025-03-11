@@ -5,6 +5,19 @@
 
 }
 
+.group {
+    -fx-padding: 10px;
+    -fx-spacing: 1px;
+    -fx-background-color: #454545;
+    -fx-background-radius: 5px;
+}
+
+.scroll-pane {
+    -fx-background-color: #3f3f3f;
+    -fx-font-family: "Trebuchet MS";
+    -fx-font-size: 17;
+}
+
 .label {
     -fx-text-fill: white;
 }
@@ -38,14 +51,22 @@
     -fx-background-radius: 5px;
 }
 
+
+
+
+
 .page {
     -fx-background-color: rgb(43, 43, 43);
     -fx-padding: 20px;
 }
 
+
+
 .text-field {
     -fx-background-color: rgb(29, 29, 29);
     -fx-text-fill: rgb(255, 255, 255);
+    -fx-prompt-text-fill: #474747;
+    -fx-text-alignment: right;
 }
 
 .text-field:hover {
@@ -53,4 +74,70 @@
     /* -fx-border-color: #ffffff; */
     /* -fx-effect: brightness(1.2); */
     -fx-effect: innershadow(gaussian, #ffffff34, 300, 0.5, 0, 0);
+}
+
+
+.combo-box {
+    -fx-background-color: #292929;
+    -fx-text-fill: white;
+    -fx-border-color: #474747;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.combo-box .arrow {
+    -fx-background-color: white;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: #292929;
+    -fx-text-fill: white;
+}
+
+.combo-box .list-cell:hover {
+    -fx-background-color: #3a3a3a;
+}
+
+.combo-box .list-view {
+    -fx-background-color: #292929;
+    -fx-border-color: #474747;
+}
+
+.combo-box .list-view .list-cell {
+    -fx-text-fill: white;
+}
+
+.combo-box .list-view .list-cell:hover {
+    -fx-background-color: #3a3a3a;
+}
+
+/* Style for ScrollBars */
+.scroll-bar {
+    -fx-background-color: #292929;
+    -fx-pref-width: 10px;
+    /* Adjust width of scrollbar */
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #474747;
+    -fx-background-radius: 5px;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #5a5a5a;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: #292929;
+}
+
+.scroll-bar .increment-button:hover,
+.scroll-bar .decrement-button:hover {
+    -fx-background-color: #3a3a3a;
+}
+
+/* Apply to all Scrollable Components */
+.scroll-bar .track {
+    -fx-background-color: #292929;
 }
