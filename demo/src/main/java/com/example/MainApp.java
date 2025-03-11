@@ -1133,6 +1133,7 @@ public class MainApp extends Application {
                     page.getChildren().remove(hbox);
                 } catch (Exception ex) {
                     showMessageBox(AlertType.ERROR, "Error", "Napaka");
+                    ex.printStackTrace();
                 }
             });
             deleteButton.setStyle("-fx-background-color: rgb(206, 78, 78)");
@@ -1163,9 +1164,9 @@ public class MainApp extends Application {
         // Fetch the event data from the database
         Dogodek dogodek = Database.getDogodek(id);
 
-        // VBox container
-        VBox page = new VBox(10);
-        page.setPadding(new Insets(10));
+        // VBox container for the page
+        VBox page = new VBox(20);
+        page.setPadding(new Insets(20));
         page.setAlignment(Pos.CENTER);
 
         // Fields and Labels
@@ -1174,14 +1175,19 @@ public class MainApp extends Application {
         TextField cenaField = new TextField(String.valueOf(dogodek.cena_vstopnice));
         DatePicker casField = new DatePicker(dogodek.cas.toLocalDateTime().toLocalDate());
 
-        TextField hourField = new TextField(String.valueOf(dogodek.cas.toLocalDateTime().getHour()));
-        hourField.setPromptText("Hour");
-        hourField.setMaxWidth(50);
+        // Hour and minute combo boxes
+        ComboBox<String> hourComboBox = new ComboBox<>();
+        hourComboBox.getItems().addAll(
+                "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
+                "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23");
+        hourComboBox.setValue(String.format("%02d", dogodek.cas.toLocalDateTime().getHour()));
 
-        TextField minuteField = new TextField(String.valueOf(dogodek.cas.toLocalDateTime().getMinute()));
-        minuteField.setPromptText("Minute");
-        minuteField.setMaxWidth(50);
+        ComboBox<String> minuteComboBox = new ComboBox<>();
+        minuteComboBox.getItems().addAll(
+                "00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55");
+        minuteComboBox.setValue(String.format("%02d", dogodek.cas.toLocalDateTime().getMinute()));
 
+        // ComboBoxes for Prostor and Izvajalec
         ComboBox<Prostor> prostorComboBox = prostorComboBox(dogodek.prostor_id);
         ComboBox<Izvajalec> izvajalecComboBox = izvajalecComboBox(dogodek.izvajalec_id);
 
@@ -1205,8 +1211,8 @@ public class MainApp extends Application {
             String opis = opisField.getText();
             float cena = Float.parseFloat(cenaField.getText());
             LocalDateTime dateTime = casField.getValue().atTime(
-                    Integer.parseInt(hourField.getText()),
-                    Integer.parseInt(minuteField.getText()));
+                    Integer.parseInt(hourComboBox.getValue()),
+                    Integer.parseInt(minuteComboBox.getValue()));
             Timestamp cas = Timestamp.valueOf(dateTime);
             int prostorId = prostorComboBox.getSelectionModel().getSelectedItem().id;
             int izvajalecId = izvajalecComboBox.getSelectionModel().getSelectedItem().id;
@@ -1214,12 +1220,12 @@ public class MainApp extends Application {
             Database.updateDogodek(id, dogodek.organizator_id, prostorId, izvajalecId, cena, cas, ime, opis);
         });
 
-        // Layout for each field
+        // Layout for each field in HBox
         HBox imeBox = createHBox("Ime: ", imeField);
         HBox opisBox = createHBox("Opis: ", opisField);
         HBox cenaBox = createHBox("Cena: ", cenaField);
         HBox casBox = createHBox("Datum: ", casField);
-        HBox timeBox = createHBox("Izberi uro: ", hourField, minuteField);
+        HBox timeBox = createHBox("Izberi uro: ", hourComboBox, minuteComboBox);
         HBox prostorBox = createHBox("Izberi prostor: ", prostorComboBox);
         HBox izvajalecBox = createHBox("Izberi izvajalca: ", izvajalecComboBox);
 

@@ -1,5 +1,6 @@
 package com.example;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,9 +13,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class Database {
-    public static String url = "jdbc:postgresql://ep-lively-cherry-a26b94ho-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require&autosave=conservative";
-    public static String user = "neondb_owner";
-    public static String password = "npg_D3d4jRMXJbfS"; // pls dont hack me
+    public static String url;
+    public static String user;
+    public static String password; // pls dont hack me
 
     public static String font = "TrebuchetMS";
     public static String color = "#000000";
@@ -29,6 +30,12 @@ public class Database {
     }
 
     public static void connect() throws SQLException {
+        Dotenv dotenv = Dotenv.load();
+
+        url = dotenv.get("DATABASE_URL");
+        user = dotenv.get("DATABASE_USER");
+        password = dotenv.get("DATABASE_PASSWORD");
+
         conn = DriverManager.getConnection(url, user, password);
 
         // String sql = "INSERT INTO dogodek_log(cas, data) VALUES(NOW(), ?)";
@@ -281,7 +288,7 @@ public class Database {
         // ) {
         stmt.setInt(1, id);
 
-        stmt.executeUpdate();
+        stmt.executeQuery();
         stmt.clearBatch();
         stmt.close();
 
@@ -322,7 +329,7 @@ public class Database {
         // ) {
 
         stmt.setInt(1, id);
-        stmt.executeUpdate();
+        stmt.executeQuery();
 
         // return true;
         // } catch (SQLException e) {
@@ -463,7 +470,7 @@ public class Database {
         // ) {
 
         ps.setInt(1, id);
-        ps.execute();
+        ps.executeQuery();
         // return true;
         // } catch (SQLException e) {
         // e.printStackTrace();
