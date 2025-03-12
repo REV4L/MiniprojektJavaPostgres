@@ -2,6 +2,8 @@
 
 The project is a **Java desktop application** designed to facilitate the management of **events (dogodki)**, **venues (prostori)**, and **performers (izvajalci)** for organizers (**organizatorji**). It provides an intuitive interface for creating, updating, and maintaining event-related data, ensuring seamless coordination between organizers and venues.
 
+Uses JavaFX.
+
 This application serves as a centralized system where event organizers can efficiently schedule events, manage available venues, and keep track of performer details. It aims to streamline the event planning process, reduce administrative workload, and enhance the overall user experience through its well-structured database and intuitive functions.
 
 The database for this project is **hosted on Neon.tech**, a cloud-native PostgreSQL platform that ensures high availability, scalability, and performance.
