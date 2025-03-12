@@ -1,16 +1,20 @@
 # Application Overview
 
-The project is a Java desktop application designed for creating and managing **izvajalci** (performers), **prostori** (spaces and venues), and **dogodki** (events) for each user (**organizator**).
+The project is a **Java desktop application** designed to facilitate the management of **events (dogodki)**, **venues (prostori)**, and **performers (izvajalci)** for organizers (**organizatorji**). It provides an intuitive interface for creating, updating, and maintaining event-related data, ensuring seamless coordination between organizers and venues.
+
+This application serves as a centralized system where event organizers can efficiently schedule events, manage available venues, and keep track of performer details. It aims to streamline the event planning process, reduce administrative workload, and enhance the overall user experience through its well-structured database and intuitive functions.
+
+The database for this project is **hosted on Neon.tech**, a cloud-native PostgreSQL platform that ensures high availability, scalability, and performance.
 
 # Database
 
-The database was designed using **Toad Data Modeler**. Below is the entity-relationship diagram:
+The database was designed using **Toad Data Modeler** and follows a structured relational model to ensure data integrity and consistency. Below is the entity-relationship diagram:
 
 ![Database Diagram](https://github.com/user-attachments/assets/13a15c02-6ae5-4120-8c41-3cfba3b7c2e3)
 
 # Database Functions
 
-This repository contains PostgreSQL functions for managing organizers, venues, events, and related entities.
+This repository contains a collection of **PostgreSQL functions** for managing event organizers, venues, performers, and event details. The functions ensure smooth operations by allowing users to perform CRUD (Create, Read, Update, Delete) actions efficiently while maintaining data integrity through triggers.
 
 ## Table of Contents
 - [Login](#login)
@@ -25,7 +29,7 @@ This repository contains PostgreSQL functions for managing organizers, venues, e
 
 ## Login
 ### `login(email TEXT, password TEXT) RETURNS INT`
-Authenticates an organizer by verifying email and password.
+Authenticates an organizer by verifying their email and password.
 
 - **Input:** Email, Password
 - **Output:** Organizer ID (if credentials match), otherwise NULL
