@@ -1,4 +1,9 @@
 com\example\Database.class
-com\example\FXMLController.class
-module-info.class
+com\example\Prostor.class
 com\example\MainApp.class
+com\example\Organizator.class
+com\example\FXMLController.class
+com\example\Kraj.class
+com\example\Izvajalec.class
+module-info.class
+com\example\Dogodek.class

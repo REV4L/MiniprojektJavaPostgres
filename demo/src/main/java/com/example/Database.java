@@ -1,6 +1,6 @@
 package com.example;
 
-import io.github.cdimascio.dotenv.Dotenv;
+// import io.github.cdimascio.dotenv.Dotenv;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +11,9 @@ import javafx.collections.ObservableList;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+
+import io.github.cdimascio.dotenv.Dotenv;
+// import io.github.cdimascio.dotenv.internal.*;
 
 public class Database {
     public static String url;
@@ -30,7 +33,20 @@ public class Database {
     }
 
     public static void connect() throws SQLException {
-        Dotenv dotenv = Dotenv.load();
+        // Dotenv dotenv = Dotenv.load();
+        Dotenv dotenv = Dotenv.configure().directory("./demo/").load();
+        // dotenv = Dotenv.configure().directory(".").load();
+        // Dotenv dotenv = Dotenv.configure().filename(".env").load();
+        // Dotenv dotenv = Dotenv.configure().directory("src/main/resources").load();
+        // Dotenv dotenv =
+        // Dotenv.configure().filename("D:/SCV/UPB/M3.1/demo/src/main/resources/.env").load();
+        // Dotenv dotenv = Dotenv.configure()
+        // .filename("D:\\SCV\\UPB\\M3.1\\demo\\src\\main\\resources\\.env")
+        // .load();
+
+        // Dotenv dotenv = Dotenv.configure()
+        // .filename("src/main/resources/.env") // Relative path
+        // .load();
 
         url = dotenv.get("DATABASE_URL");
         user = dotenv.get("DATABASE_USER");
