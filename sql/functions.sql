@@ -383,7 +383,7 @@ BEGIN
         WHERE id = OLD.prostor_id;
     END IF;
 
-    RETURN NEW;
+    -- RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 

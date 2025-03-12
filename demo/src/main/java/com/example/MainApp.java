@@ -1171,7 +1171,15 @@ public class MainApp extends Application {
 
         // Fields and Labels
         TextField imeField = new TextField(dogodek.ime);
-        TextField opisField = new TextField(dogodek.opis);
+        // TextField opisField = new TextField(dogodek.opis);
+
+        TextArea opisField = new TextArea();
+        opisField.setPromptText("Opis...");
+        opisField.setMaxWidth(3000);
+        opisField.setPrefRowCount(5); // Adjusts height
+        opisField.setWrapText(true); // Enables text wrapping
+        opisField.setText(dogodek.opis);
+
         TextField cenaField = new TextField(String.valueOf(dogodek.cena_vstopnice));
         DatePicker casField = new DatePicker(dogodek.cas.toLocalDateTime().toLocalDate());
 
